@@ -6,6 +6,7 @@ export interface Invitation {
   id: string;
   guest_name: string;
   plus_ones: number;
+  theme: string;
   created_at: string;
   view_count?: number;
   rsvp_name?: string;
@@ -50,10 +51,11 @@ export class ApiService {
     });
   }
 
-  createInvite(guestName: string, plusOnes: number): Observable<Invitation> {
+  createInvite(guestName: string, plusOnes: number, theme: string): Observable<Invitation> {
     return this.http.post<Invitation>(`${this.base}/invites`, {
       guest_name: guestName,
       plus_ones: plusOnes,
+      theme,
     });
   }
 }

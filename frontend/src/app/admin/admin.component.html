@@ -36,6 +36,10 @@
         <option [value]="3">+3</option>
         <option [value]="4">+4</option>
       </select>
+      <select [(ngModel)]="newTheme">
+        <option value="toystory">Toy Story</option>
+        <option value="retro">Retro Western</option>
+      </select>
       <button (click)="createInvite()" [disabled]="!newName.trim()">CREATE</button>
     </div>
   </div>
@@ -56,9 +60,12 @@
         <span *ngIf="inv.num_guests">Guests: {{inv.num_guests}}</span>
         <span *ngIf="inv.rsvp_name">RSVP by: {{inv.rsvp_name}}</span>
       </div>
+      <div class="invite-meta">
+        <span class="theme-badge">{{inv.theme || 'toystory'}}</span>
+      </div>
       <div class="invite-url">
-        <input type="text" readonly [value]="inviteUrl(inv.id)">
-        <button (click)="copyUrl(inv.id)">COPY</button>
+        <input type="text" readonly [value]="inviteUrl(inv)">
+        <button (click)="copyUrl(inv)">COPY</button>
       </div>
     </div>
     <div class="empty" *ngIf="!invites.length && !loading">No invites yet. Create one above!</div>

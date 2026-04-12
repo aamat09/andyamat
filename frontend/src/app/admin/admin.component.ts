@@ -16,6 +16,7 @@ export class AdminComponent implements OnInit {
   invites: Invitation[] = [];
   newName = '';
   newPlusOnes = 0;
+  newTheme = 'toystory';
   loading = false;
   error = '';
   baseUrl = '';
@@ -57,11 +58,12 @@ export class AdminComponent implements OnInit {
 
   createInvite() {
     if (!this.newName.trim()) return;
-    this.api.createInvite(this.newName.trim(), Number(this.newPlusOnes)).subscribe({
+    this.api.createInvite(this.newName.trim(), Number(this.newPlusOnes), this.newTheme).subscribe({
       next: (inv) => {
         this.invites.unshift(inv);
         this.newName = '';
         this.newPlusOnes = 0;
+        this.newTheme = 'toystory';
       },
       error: () => {
         this.error = 'Failed to create invite';
@@ -69,12 +71,13 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  inviteUrl(id: string): string {
-    return `${this.baseUrl}/invite/${id}`;
+  inviteUrl(inv: Invitation): string {
+    const theme = inv.theme || 'toystory';
+    return `${this.baseUrl}/${theme}/invite/${inv.id}`;
   }
 
-  copyUrl(id: string) {
-    navigator.clipboard.writeText(this.inviteUrl(id));
+  copyUrl(inv: Invitation) {
+    navigator.clipboard.writeText(this.inviteUrl(inv));
   }
 
   get totalAttending(): number {

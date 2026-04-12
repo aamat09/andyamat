@@ -122,15 +122,17 @@ void InviteController::createInvite(
     auto guestName = (*json)["guest_name"].asString();
     auto poVal = json->get("plus_ones", 0);
     int plusOnes = poVal.isString() ? std::stoi(poVal.asString()) : poVal.asInt();
+    auto theme = json->get("theme", "toystory").asString();
 
     auto db = app().getDbClient();
     db->execSqlAsync(
-        "INSERT INTO invitations (guest_name, plus_ones) VALUES ($1, $2) RETURNING id, guest_name, plus_ones, created_at",
+        "INSERT INTO invitations (guest_name, plus_ones, theme) VALUES ($1, $2, $3) RETURNING id, guest_name, plus_ones, theme, created_at",
         [callback](const Result &r) {
             Json::Value json;
             json["id"] = r[0]["id"].as<std::string>();
             json["guest_name"] = r[0]["guest_name"].as<std::string>();
             json["plus_ones"] = r[0]["plus_ones"].as<int>();
+            json["theme"] = r[0]["theme"].as<std::string>();
             json["created_at"] = r[0]["created_at"].as<std::string>();
             auto resp = HttpResponse::newHttpJsonResponse(json);
             resp->setStatusCode(k201Created);
@@ -143,7 +145,7 @@ void InviteController::createInvite(
             resp->setStatusCode(k500InternalServerError);
             callback(resp);
         },
-        guestName, plusOnes);
+        guestName, plusOnes, theme);
 }
 
 void InviteController::listInvites(
@@ -152,13 +154,13 @@ void InviteController::listInvites(
 {
     auto db = app().getDbClient();
     db->execSqlAsync(
-        R"(SELECT i.id, i.guest_name, i.plus_ones, i.created_at,
+        R"(SELECT i.id, i.guest_name, i.plus_ones, i.theme, i.created_at,
                   COUNT(DISTINCT v.id) AS view_count,
                   r.attending, r.name AS rsvp_name, r.num_guests, r.submitted_at
            FROM invitations i
            LEFT JOIN invite_views v ON v.invitation_id = i.id
            LEFT JOIN rsvps r ON r.invitation_id = i.id
-           GROUP BY i.id, r.attending, r.name, r.num_guests, r.submitted_at
+           GROUP BY i.id, i.theme, r.attending, r.name, r.num_guests, r.submitted_at
            ORDER BY i.created_at DESC)",
         [callback](const Result &r) {
             Json::Value arr(Json::arrayValue);
@@ -167,6 +169,7 @@ void InviteController::listInvites(
                 obj["id"] = row["id"].as<std::string>();
                 obj["guest_name"] = row["guest_name"].as<std::string>();
                 obj["plus_ones"] = row["plus_ones"].as<int>();
+                obj["theme"] = row["theme"].isNull() ? "toystory" : row["theme"].as<std::string>();
                 obj["created_at"] = row["created_at"].as<std::string>();
                 obj["view_count"] = row["view_count"].as<int>();
                 if (!row["rsvp_name"].isNull()) {

@@ -7,6 +7,7 @@ CREATE TABLE invitations (
     id          TEXT PRIMARY KEY DEFAULT encode(gen_random_bytes(6), 'hex'),
     guest_name  TEXT NOT NULL,
     plus_ones   INT DEFAULT 0,
+    theme       TEXT DEFAULT 'toystory',
     created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
