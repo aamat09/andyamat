@@ -69,8 +69,8 @@ export abstract class BaseGameEngine implements AfterViewInit, OnDestroy {
       if (this.inviteId) {
         this.api.recordView(this.inviteId).subscribe({ error: () => {} });
         this.api.getInvite(this.inviteId).subscribe({
-          next: inv => { this.guestName = inv.guest_name; },
-          error: () => { this.guestName = 'Friend'; }
+          next: inv => { this.guestName = inv.guest_name; this.rsvpName = inv.guest_name; },
+          error: () => { this.guestName = ''; }
         });
       }
     });
