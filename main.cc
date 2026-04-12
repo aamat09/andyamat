@@ -5,24 +5,25 @@
 int main() {
     drogon::app().loadConfigFile("./config.json");
 
-    // Read index.html into memory for SPA fallback
-    std::string indexPath = "./frontend/dist/web/browser/index.html";
-
-    // SPA: custom 404 page serves index.html (for when static files aren't found)
-    drogon::app().setCustom404Page(
-        drogon::HttpResponse::newFileResponse(indexPath, "", drogon::CT_TEXT_HTML),
-        true);
-
-    // Override the 404 status to 200 for SPA routes via post-handling advice
-    drogon::app().registerPostHandlingAdvice(
-        [](const drogon::HttpRequestPtr &req, const drogon::HttpResponsePtr &resp) {
-            // If it's a 404 and NOT an /api/ route, it's a SPA route — set to 200
-            if (resp->statusCode() == drogon::k404NotFound) {
+    // SPA fallback: intercept 404s for non-API routes, serve index.html with 200
+    drogon::app().setCustomErrorHandler(
+        [](drogon::HttpStatusCode code, const drogon::HttpRequestPtr &req)
+            -> drogon::HttpResponsePtr {
+            if (code == drogon::k404NotFound) {
                 auto path = req->path();
                 if (path.find("/api/") != 0) {
+                    auto resp = drogon::HttpResponse::newFileResponse(
+                        "./frontend/dist/web/browser/index.html",
+                        "",
+                        drogon::CT_TEXT_HTML);
                     resp->setStatusCode(drogon::k200OK);
+                    return resp;
                 }
             }
+            // Default error response for API routes
+            auto resp = drogon::HttpResponse::newHttpResponse();
+            resp->setStatusCode(code);
+            return resp;
         });
 
     drogon::app().run();
