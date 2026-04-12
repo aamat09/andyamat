@@ -1,5 +1,37 @@
 #include "InviteController.h"
 #include <drogon/orm/DbClient.h>
+#include <thread>
+#include <cstdlib>
+
+namespace {
+void sendRsvpNotification(const std::string &guestName, bool attending,
+                          int numGuests, const std::string &invitationId) {
+    std::string status = attending ? "ACCEPTED" : "DECLINED";
+    std::string emoji = attending ? "YEE-HAW!" : "Aw shucks...";
+    std::string subject = "RSVP " + status + " - " + guestName;
+
+    std::string body =
+        emoji + "\\n\\n"
+        "Guest: " + guestName + "\\n"
+        "Status: " + status + "\\n"
+        "Number of guests: " + std::to_string(numGuests) + "\\n"
+        "Invitation ID: " + invitationId + "\\n\\n"
+        "View all RSVPs at https://andyamat.com/admin";
+
+    auto sendTo = [&](const std::string &to) {
+        std::string cmd =
+            "aws ses send-email"
+            " --from 'no_reply@andyamat.com'"
+            " --destination 'ToAddresses=" + to + "'"
+            " --message 'Subject={Data=\"" + subject + "\"},Body={Text={Data=\"" + body + "\"}}'"
+            " --region us-east-1 >/dev/null 2>&1 &";
+        system(cmd.c_str());
+    };
+
+    sendTo("aamatreyes@gmail.com");
+    sendTo("sabrinaelizabeth65@gmail.com");
+}
+} // namespace
 
 using namespace drogon;
 using namespace drogon::orm;
@@ -51,7 +83,8 @@ void InviteController::createInvite(
     }
 
     auto guestName = (*json)["guest_name"].asString();
-    int plusOnes = json->get("plus_ones", 0).asInt();
+    auto poVal = json->get("plus_ones", 0);
+    int plusOnes = poVal.isString() ? std::stoi(poVal.asString()) : poVal.asInt();
 
     auto db = app().getDbClient();
     db->execSqlAsync(
@@ -160,18 +193,22 @@ void InviteController::submitRsvp(
     auto invId = (*json)["invitation_id"].asString();
     auto name = (*json)["name"].asString();
     auto attending = (*json)["attending"].asBool();
-    int numGuests = json->get("num_guests", 1).asInt();
+    auto ngVal = json->get("num_guests", 1);
+    int numGuests = ngVal.isString() ? std::stoi(ngVal.asString()) : ngVal.asInt();
 
     auto db = app().getDbClient();
     db->execSqlAsync(
         "INSERT INTO rsvps (invitation_id, name, num_guests, attending) VALUES ($1, $2, $3, $4) RETURNING id",
-        [callback](const Result &r) {
+        [callback, name, attending, numGuests, invId](const Result &r) {
             Json::Value json;
             json["ok"] = true;
             json["rsvp_id"] = r[0]["id"].as<int>();
             auto resp = HttpResponse::newHttpJsonResponse(json);
             resp->setStatusCode(k201Created);
             callback(resp);
+
+            // Send email notification asynchronously
+            std::thread(sendRsvpNotification, name, attending, numGuests, invId).detach();
         },
         [callback](const DrogonDbException &e) {
             Json::Value json;
