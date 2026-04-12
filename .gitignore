@@ -14,8 +14,8 @@ frontend/.vscode/
 *.sublime-workspace
 .DS_Store
 
-# Screenshots
-*.png
-*.jpeg
-*.jpg
-!frontend/public/favicon.ico
+# Playwright
+.playwright-mcp/
+
+# Screenshots (saved in .playwright-mcp/)
+screenshots/

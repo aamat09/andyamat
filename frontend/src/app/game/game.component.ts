@@ -141,6 +141,7 @@ function drawDialogueBox(
   showNext: boolean, highlight?: { line: number; color: string },
   registryBtn = false,
 ) {
+  const lineH = lines.length > 5 ? 14 : 18;
   const boxH = 130;
   const boxY = H - boxH - 16;
   const boxX = 16;
@@ -168,25 +169,27 @@ function drawDialogueBox(
       // highlight bg
       const tw = ctx.measureText(line).width;
       ctx.fillStyle = '#fef3c7';
-      ctx.fillRect(boxX + 12, boxY + 32 + i * 18, tw + 8, 16);
+      ctx.fillRect(boxX + 12, boxY + 32 + i * lineH, tw + 8, lineH - 2);
       ctx.fillStyle = '#e74c3c';
     } else {
       ctx.fillStyle = '#4a4a6a';
     }
-    ctx.fillText(line, boxX + 14, boxY + 44 + i * 18);
+    ctx.fillText(line, boxX + 14, boxY + 44 + i * lineH);
   });
 
-  // Registry button
+  // Registry button (top-right of box)
   if (registryBtn) {
-    const btnY = boxY + boxH - 34;
-    const btnX = boxX + 12;
-    const btnW = 160;
+    const btnW = 150;
+    const btnX = boxX + boxW - btnW - 12;
+    const btnY = boxY + 8;
     ctx.fillStyle = '#6bb5e0';
     roundRect(ctx, btnX, btnY, btnW, 24, 4);
     ctx.fill();
     ctx.fillStyle = '#fff';
     ctx.font = '8px "Press Start 2P", monospace';
-    ctx.fillText('VIEW REGISTRY', btnX + 10, btnY + 16);
+    ctx.textAlign = 'center';
+    ctx.fillText('VIEW REGISTRY', btnX + btnW / 2, btnY + 16);
+    ctx.textAlign = 'left';
   }
 
   // Next arrow
@@ -858,10 +861,13 @@ export class GameComponent implements AfterViewInit, OnDestroy {
           this.giftOpened = true;
           setTimeout(() => { this.giftDialogue = true; }, 300);
         } else if (this.giftDialogue) {
-          // Check if tapped registry button area
-          const btnY = this.H - 130 - 16 + 130 - 34;
-          const btnX = 28;
-          if (tapX >= btnX && tapX <= btnX + 160 && tapY >= btnY && tapY <= btnY + 24) {
+          // Check if tapped registry button area (top-right of dialogue)
+          const boxY = this.H - 130 - 16;
+          const boxW = this.W - 32;
+          const btnW = 150;
+          const btnX = 16 + boxW - btnW - 12;
+          const btnY = boxY + 8;
+          if (tapX >= btnX && tapX <= btnX + btnW && tapY >= btnY && tapY <= btnY + 24) {
             window.open('https://www.amazon.com/baby-reg/sabrina-fonstecilla-june-2026-miami/3BIOJ51KE3ACA', '_blank');
             return;
           }
