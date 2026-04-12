@@ -1,0 +1,178 @@
+.admin {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-family: 'Press Start 2P', monospace;
+  color: #4a4a6a;
+  background: #f0f7ff;
+  min-height: 100dvh;
+}
+
+h1 {
+  font-size: 16px;
+  color: #8B6914;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 8px;
+  text-align: center;
+  color: #999;
+  margin-bottom: 24px;
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  .stat {
+    background: #fff;
+    border: 2px solid #4a4a6a;
+    border-radius: 6px;
+    padding: 12px 16px;
+    text-align: center;
+    min-width: 80px;
+
+    &.attending { border-color: #7ec88b; .stat-num { color: #7ec88b; } }
+    &.declined { border-color: #e74c3c; .stat-num { color: #e74c3c; } }
+    &.pending { border-color: #f5d76e; .stat-num { color: #d4a017; } }
+  }
+
+  .stat-num {
+    display: block;
+    font-size: 20px;
+    color: #4a4a6a;
+  }
+
+  .stat-label {
+    font-size: 6px;
+    color: #999;
+  }
+}
+
+h2 {
+  font-size: 10px;
+  margin-bottom: 12px;
+}
+
+.create-form {
+  background: #fff;
+  border: 2px solid #4a4a6a;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+
+  .form-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  input, select {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 8px 10px;
+    border: 2px solid #4a4a6a;
+    border-radius: 4px;
+    flex: 1;
+    min-width: 120px;
+  }
+
+  select { flex: 0 0 auto; min-width: 90px; }
+
+  button {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 8px 16px;
+    background: #f5d76e;
+    border: 2px solid #8B6914;
+    border-radius: 4px;
+    color: #6B4F10;
+    cursor: pointer;
+
+    &:disabled { opacity: 0.4; }
+  }
+}
+
+.error {
+  background: #fde8e8;
+  border: 2px solid #e74c3c;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 7px;
+  color: #e74c3c;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.invite-card {
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 10px;
+
+  .invite-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .guest-name { font-size: 10px; }
+
+  .badge {
+    font-size: 6px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    &.yes { background: #d4edda; color: #2d6a3f; }
+    &.no { background: #fde8e8; color: #e74c3c; }
+    &.pending { background: #fef3c7; color: #d4a017; }
+  }
+
+  .invite-meta {
+    font-size: 7px;
+    color: #999;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 16px;
+  }
+
+  .invite-url {
+    display: flex;
+    gap: 6px;
+
+    input {
+      font-family: monospace;
+      font-size: 9px;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      flex: 1;
+      color: #6bb5e0;
+      background: #f8f8f8;
+    }
+
+    button {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      padding: 6px 10px;
+      background: #6bb5e0;
+      border: 1px solid #4a8eb0;
+      border-radius: 3px;
+      color: #fff;
+      cursor: pointer;
+    }
+  }
+}
+
+.empty, .loading {
+  text-align: center;
+  font-size: 8px;
+  color: #999;
+  padding: 30px;
+}

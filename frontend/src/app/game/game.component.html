@@ -1,0 +1,33 @@
+<div class="game-container" #container>
+  <canvas #gameCanvas
+    (click)="onTap($event)"
+    (touchstart)="onTap($event)">
+  </canvas>
+
+  <!-- RSVP overlay -->
+  <div class="rsvp-overlay" *ngIf="showRsvp">
+    <div class="rsvp-card">
+      <div class="rsvp-title">Round 'em up!</div>
+      <div class="rsvp-sub">I need a headcount, partner!<br>RSVP by April 25th</div>
+      <div class="form-group">
+        <label>YOUR NAME</label>
+        <input type="text" [(ngModel)]="rsvpName" placeholder="Howdy, I'm...">
+      </div>
+      <div class="form-group">
+        <label>NUMBER OF GUESTS</label>
+        <select [(ngModel)]="rsvpGuests">
+          <option value="0" disabled selected>Select...</option>
+          <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{n}}{{n===5?'+':''}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>CAN WE COUNT ON YA?</label>
+        <div class="attend-btns">
+          <button [class.selected]="rsvpAttending===true" (click)="rsvpAttending=true">YEE-HAW!</button>
+          <button [class.selected]="rsvpAttending===false" (click)="rsvpAttending=false">CAN'T MAKE IT</button>
+        </div>
+      </div>
+      <button class="submit-btn" [disabled]="!canSubmit()" (click)="submitRsvp()">SEND IT, PARTNER!</button>
+    </div>
+  </div>
+</div>

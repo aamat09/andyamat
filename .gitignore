@@ -1,0 +1,21 @@
+# Build
+/build/
+/logs/
+/uploads/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.vscode/
+
+# IDE
+.idea/
+*.sublime-workspace
+.DS_Store
+
+# Screenshots
+*.png
+*.jpeg
+*.jpg
+!frontend/public/favicon.ico

@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>A Boy Story - Baby Andy's Shower</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --sky: #d4e9f7;
+    --sky-dark: #a8d4f0;
+    --cloud: #f0f7ff;
+    --brown: #8B6914;
+    --brown-dark: #6B4F10;
+    --green: #7ec88b;
+    --blue: #6bb5e0;
+    --pink: #f2a7b3;
+    --yellow: #f5d76e;
+    --red: #e74c3c;
+    --text: #4a4a6a;
+    --dialog-bg: #ffffffee;
+  }
+
+  body {
+    font-family: 'Press Start 2P', monospace;
+    background: var(--sky);
+    overflow: hidden;
+    height: 100dvh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  #game {
+    width: 100%;
+    max-width: 480px;
+    height: 100dvh;
+    max-height: 860px;
+    position: relative;
+    overflow: hidden;
+    background: var(--sky);
+  }
+
+  /* ---- SCREENS ---- */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    padding: 24px;
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ---- CLOUDS ---- */
+  .clouds {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 200px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .cloud {
+    position: absolute;
+    background: var(--cloud);
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: drift linear infinite;
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: var(--cloud);
+    border-radius: 50%;
+  }
+  .c1 { width: 100px; height: 40px; top: 30px; left: -120px; animation-duration: 25s; }
+  .c1::before { width: 50px; height: 30px; top: -15px; left: 20px; }
+  .c1::after { width: 60px; height: 25px; top: -10px; left: 50px; }
+  .c2 { width: 80px; height: 30px; top: 70px; left: -100px; animation-duration: 35s; animation-delay: 5s; }
+  .c2::before { width: 40px; height: 25px; top: -12px; left: 15px; }
+  .c2::after { width: 45px; height: 20px; top: -8px; left: 40px; }
+  .c3 { width: 120px; height: 45px; top: 110px; left: -140px; animation-duration: 30s; animation-delay: 12s; }
+  .c3::before { width: 55px; height: 35px; top: -18px; left: 25px; }
+  .c3::after { width: 65px; height: 28px; top: -12px; left: 60px; }
+  @keyframes drift {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(100vw + 200px)); }
+  }
+
+  /* ---- GROUND ---- */
+  .ground {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 120px;
+    background: linear-gradient(to bottom, var(--green) 0%, #5ba86c 100%);
+    border-top: 4px solid #4a9a5a;
+  }
+  .ground::before {
+    content: '';
+    position: absolute;
+    top: -20px; left: 0; right: 0; height: 20px;
+    background: repeating-linear-gradient(90deg, transparent, transparent 30px, #6db87d 30px, #6db87d 34px);
+    opacity: 0.3;
+  }
+
+  /* ---- STARS (title) ---- */
+  .stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: #fff;
+    animation: twinkle 2s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+
+  /* ---- TITLE SCREEN ---- */
+  #title-screen {
+    background: linear-gradient(180deg, #1a1a3e 0%, #2d2d6b 40%, var(--sky-dark) 100%);
+  }
+  .title-text {
+    font-size: 28px;
+    color: var(--yellow);
+    text-shadow: 3px 3px 0 var(--brown-dark), -1px -1px 0 #fff3;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    animation: title-float 3s ease-in-out infinite;
+  }
+  @keyframes title-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .title-sub {
+    font-size: 10px;
+    color: var(--cloud);
+    text-align: center;
+    margin-bottom: 40px;
+    opacity: 0.9;
+  }
+  .start-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: var(--yellow);
+    background: none;
+    border: 3px solid var(--yellow);
+    padding: 14px 28px;
+    cursor: pointer;
+    animation: blink 1.2s step-end infinite;
+    transition: transform 0.1s;
+  }
+  .start-btn:active { transform: scale(0.95); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ---- BABY ANDY SPRITE ---- */
+  .baby-andy {
+    position: relative;
+    width: 80px;
+    height: 100px;
+    margin: 20px auto;
+  }
+  /* Hat */
+  .baby-andy .hat {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 50px; height: 20px;
+    background: var(--brown);
+    border-radius: 6px 6px 2px 2px;
+    border: 2px solid var(--brown-dark);
+  }
+  .baby-andy .hat::before {
+    content: '';
+    position: absolute;
+    bottom: -6px; left: 50%;
+    transform: translateX(-50%);
+    width: 36px; height: 14px;
+    background: var(--brown);
+    border-radius: 4px;
+    border: 2px solid var(--brown-dark);
+    border-top: none;
+  }
+  .baby-andy .hat-band {
+    position: absolute;
+    top: 14px; left: 50%;
+    transform: translateX(-50%);
+    width: 50px; height: 4px;
+    background: var(--yellow);
+    z-index: 1;
+  }
+  /* Head */
+  .baby-andy .head {
+    position: absolute;
+    top: 26px; left: 50%;
+    transform: translateX(-50%);
+    width: 36px; height: 32px;
+    background: #fdd8b5;
+    border-radius: 50%;
+    border: 2px solid #e8c4a0;
+  }
+  .baby-andy .eye {
+    position: absolute;
+    width: 5px; height: 6px;
+    background: #333;
+    border-radius: 50%;
+    top: 10px;
+  }
+  .baby-andy .eye.left { left: 8px; }
+  .baby-andy .eye.right { right: 8px; }
+  .baby-andy .mouth {
+    position: absolute;
+    bottom: 6px; left: 50%;
+    transform: translateX(-50%);
+    width: 10px; height: 5px;
+    border-bottom: 2px solid #e88;
+    border-radius: 0 0 50% 50%;
+  }
+  .baby-andy .cheek {
+    position: absolute;
+    width: 6px; height: 4px;
+    background: #f8b4b4;
+    border-radius: 50%;
+    top: 18px;
+    opacity: 0.6;
+  }
+  .baby-andy .cheek.left { left: 3px; }
+  .baby-andy .cheek.right { right: 3px; }
+  /* Body */
+  .baby-andy .body {
+    position: absolute;
+    top: 56px; left: 50%;
+    transform: translateX(-50%);
+    width: 34px; height: 28px;
+    background: var(--blue);
+    border-radius: 8px 8px 12px 12px;
+    border: 2px solid #5a9ec0;
+  }
+  .baby-andy .body::before {
+    content: '★';
+    position: absolute;
+    top: 4px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--yellow);
+  }
+  /* Legs */
+  .baby-andy .leg {
+    position: absolute;
+    top: 82px;
+    width: 14px; height: 16px;
+    background: #fdd8b5;
+    border-radius: 4px 4px 6px 6px;
+    border: 2px solid #e8c4a0;
+  }
+  .baby-andy .leg.left { left: 16px; }
+  .baby-andy .leg.right { right: 16px; }
+
+  /* ---- BABY ANDY WALK ANIMATION ---- */
+  .baby-andy.walking {
+    animation: waddle 0.4s ease-in-out infinite;
+  }
+  @keyframes waddle {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-3deg); }
+    75% { transform: rotate(3deg); }
+  }
+
+  /* ---- SCENE SCREENS ---- */
+  .scene-screen {
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky-dark) 60%);
+  }
+  .scene-title {
+    font-size: 11px;
+    color: var(--text);
+    margin-bottom: 10px;
+    text-align: center;
+    z-index: 2;
+  }
+
+  /* ---- INTERACTIVE OBJECTS ---- */
+  .scene-object {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+    z-index: 2;
+  }
+  .scene-object:hover { transform: scale(1.05); }
+  .scene-object:active { transform: scale(0.95); }
+
+  .tap-hint {
+    font-size: 8px;
+    color: var(--text);
+    text-align: center;
+    animation: blink 1.2s step-end infinite;
+    margin-top: 8px;
+    z-index: 2;
+  }
+
+  /* ---- CALENDAR ---- */
+  .calendar {
+    width: 160px;
+    background: #fff;
+    border: 4px solid var(--red);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+  }
+  .calendar-header {
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    padding: 8px;
+    text-align: center;
+  }
+  .calendar-body {
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    font-size: 7px;
+    color: var(--text);
+    text-align: center;
+  }
+  .calendar-body span { padding: 3px 0; }
+  .calendar-body .day-label { color: #999; font-size: 6px; }
+  .calendar-body .today {
+    background: var(--yellow);
+    border-radius: 50%;
+    font-weight: bold;
+    color: var(--red);
+    position: relative;
+  }
+  .calendar-body .today.circled::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 3px solid var(--red);
+    border-radius: 50%;
+    animation: circle-pop 0.3s ease-out;
+  }
+  @keyframes circle-pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .calendar-body .empty { visibility: hidden; }
+
+  /* ---- TREASURE MAP ---- */
+  .treasure-map {
+    width: 200px;
+    height: 160px;
+    background: #f5e6c8;
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    position: relative;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .treasure-map::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 2px dashed var(--brown);
+    border-radius: 2px;
+    opacity: 0.3;
+  }
+  .map-x {
+    font-size: 48px;
+    color: var(--red);
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+  .map-path {
+    position: absolute;
+    border: 2px dashed var(--brown);
+    opacity: 0.4;
+  }
+  .map-path-1 { top: 20px; left: 20px; width: 60px; height: 0; transform: rotate(30deg); }
+  .map-path-2 { top: 50px; left: 60px; width: 40px; height: 0; transform: rotate(-20deg); }
+  .map-path-3 { bottom: 40px; right: 30px; width: 50px; height: 0; transform: rotate(15deg); }
+
+  /* ---- GIFT BOX ---- */
+  .gift-box {
+    position: relative;
+    width: 120px;
+    height: 100px;
+  }
+  .gift-box .box {
+    position: absolute;
+    bottom: 0;
+    width: 120px; height: 80px;
+    background: linear-gradient(135deg, var(--blue) 0%, #5a9ec0 100%);
+    border: 3px solid #4a8eb0;
+    border-radius: 4px;
+  }
+  .gift-box .ribbon-v {
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    width: 16px; height: 80px;
+    background: var(--yellow);
+    bottom: 0;
+    z-index: 1;
+  }
+  .gift-box .ribbon-h {
+    position: absolute;
+    left: 0; right: 0;
+    height: 16px; top: 52px;
+    background: var(--yellow);
+    z-index: 1;
+  }
+  .gift-box .bow {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 50px; height: 30px;
+    z-index: 2;
+  }
+  .gift-box .bow::before, .gift-box .bow::after {
+    content: '';
+    position: absolute;
+    width: 24px; height: 20px;
+    border: 3px solid var(--yellow);
+    background: #f5d76e88;
+    border-radius: 50% 50% 0 0;
+    top: 8px;
+  }
+  .gift-box .bow::before { left: 0; transform: rotate(-20deg); }
+  .gift-box .bow::after { right: 0; transform: rotate(20deg); }
+  .gift-box .bow-center {
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 12px; height: 12px;
+    background: var(--yellow);
+    border-radius: 50%;
+    border: 2px solid #d4b84e;
+    z-index: 3;
+  }
+  .gift-box.opened .box { animation: shake 0.3s ease; }
+  @keyframes shake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+  }
+
+  /* ---- DIALOGUE BOX ---- */
+  .dialogue {
+    position: absolute;
+    bottom: 30px;
+    left: 16px; right: 16px;
+    background: var(--dialog-bg);
+    border: 4px solid var(--text);
+    border-radius: 8px;
+    padding: 16px;
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+  .dialogue.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .dialogue-name {
+    font-size: 8px;
+    color: var(--brown);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dialogue-name::before {
+    content: '>';
+    animation: blink 0.8s step-end infinite;
+  }
+  .dialogue-text {
+    font-size: 9px;
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 50px;
+  }
+  .dialogue-text .highlight {
+    color: var(--red);
+    background: #fef3c7;
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+  .dialogue .next-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--blue);
+    background: none;
+    border: 2px solid var(--blue);
+    padding: 8px 16px;
+    margin-top: 12px;
+    cursor: pointer;
+    float: right;
+  }
+  .dialogue .next-btn:active { transform: scale(0.95); }
+
+  .dialogue .registry-link {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: #fff;
+    background: var(--blue);
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-top: 8px;
+    border: 2px solid #4a8eb0;
+  }
+  .dialogue .registry-link:active { transform: scale(0.95); }
+
+  /* ---- RSVP SCREEN ---- */
+  #rsvp-screen {
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky-dark) 100%);
+    justify-content: flex-start;
+    padding-top: 40px;
+  }
+  .rsvp-form {
+    width: 100%;
+    max-width: 340px;
+    z-index: 2;
+  }
+  .rsvp-form h2 {
+    font-size: 14px;
+    color: var(--brown);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .rsvp-form .rsvp-sub {
+    font-size: 8px;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 8px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group select {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 3px solid var(--text);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--blue);
+  }
+  .attend-btns {
+    display: flex;
+    gap: 12px;
+  }
+  .attend-btn {
+    flex: 1;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 12px;
+    border: 3px solid var(--text);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .attend-btn.selected {
+    background: var(--green);
+    border-color: #4a9a5a;
+    color: #fff;
+  }
+  .attend-btn:active { transform: scale(0.95); }
+  .submit-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    width: 100%;
+    padding: 14px;
+    background: var(--yellow);
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    color: var(--brown-dark);
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.1s;
+  }
+  .submit-btn:active { transform: scale(0.95); }
+  .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ---- CONFIRMATION SCREEN ---- */
+  #confirm-screen {
+    background: linear-gradient(180deg, #1a1a3e 0%, #2d2d6b 60%, var(--sky-dark) 100%);
+  }
+  .confirm-text {
+    font-size: 18px;
+    color: var(--yellow);
+    text-align: center;
+    margin-bottom: 16px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+  }
+  .confirm-sub {
+    font-size: 9px;
+    color: var(--cloud);
+    text-align: center;
+    line-height: 2;
+    margin-bottom: 30px;
+  }
+
+  /* ---- FIREWORKS ---- */
+  .fireworks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .firework {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: firework-burst 1.5s ease-out infinite;
+  }
+  @keyframes firework-burst {
+    0% { transform: scale(0); opacity: 1; box-shadow: 0 0 0 0 currentColor, 30px 0 0 0 currentColor, -30px 0 0 0 currentColor, 0 30px 0 0 currentColor, 0 -30px 0 0 currentColor, 20px 20px 0 0 currentColor, -20px -20px 0 0 currentColor, 20px -20px 0 0 currentColor, -20px 20px 0 0 currentColor; }
+    100% { transform: scale(1); opacity: 0; box-shadow: 0 0 0 0 currentColor, 60px 0 0 0 currentColor, -60px 0 0 0 currentColor, 0 60px 0 0 currentColor, 0 -60px 0 0 currentColor, 42px 42px 0 0 currentColor, -42px -42px 0 0 currentColor, 42px -42px 0 0 currentColor, -42px 42px 0 0 currentColor; }
+  }
+
+  /* ---- DECLINE SCREEN ---- */
+  #decline-screen {
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky-dark) 100%);
+  }
+  .decline-text {
+    font-size: 12px;
+    color: var(--text);
+    text-align: center;
+    line-height: 2;
+  }
+
+  /* ---- PROGRESS DOTS ---- */
+  .progress {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 20;
+  }
+  .progress .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    border: 1px solid rgba(255,255,255,0.5);
+    transition: background 0.3s;
+  }
+  .progress .dot.filled {
+    background: var(--yellow);
+    border-color: var(--brown);
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-height: 600px) {
+    .baby-andy { transform: scale(0.7); margin: 0; }
+    .dialogue { padding: 10px; }
+    .dialogue-text { font-size: 8px; min-height: 30px; }
+    .title-text { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="game">
+
+  <!-- ============ TITLE SCREEN ============ -->
+  <div id="title-screen" class="screen active">
+    <div class="stars" id="stars"></div>
+    <div class="title-text">A Boy<br>Story</div>
+    <div class="title-sub">Welcome to Andy's<br>Baby Shower</div>
+    <div class="baby-andy" style="margin-bottom: 30px;">
+      <div class="hat"></div>
+      <div class="hat-band"></div>
+      <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="mouth"></div>
+        <div class="cheek left"></div>
+        <div class="cheek right"></div>
+      </div>
+      <div class="body"></div>
+      <div class="leg left"></div>
+      <div class="leg right"></div>
+    </div>
+    <button class="start-btn" onclick="startGame()">TAP TO START</button>
+  </div>
+
+  <!-- ============ INTRO SCREEN ============ -->
+  <div id="intro-screen" class="screen scene-screen">
+    <div class="clouds">
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+    </div>
+    <div class="ground"></div>
+    <div class="progress"><div class="dot filled"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="baby-andy walking" style="margin-top: 20px;">
+      <div class="hat"></div>
+      <div class="hat-band"></div>
+      <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="mouth"></div>
+        <div class="cheek left"></div>
+        <div class="cheek right"></div>
+      </div>
+      <div class="body"></div>
+      <div class="leg left"></div>
+      <div class="leg right"></div>
+    </div>
+    <div class="dialogue show" id="intro-dialogue">
+      <div class="dialogue-name">BABY ANDY</div>
+      <div class="dialogue-text" id="intro-text"></div>
+      <button class="next-btn" onclick="goToScene('calendar-screen')">NEXT ></button>
+    </div>
+  </div>
+
+  <!-- ============ CALENDAR SCREEN ============ -->
+  <div id="calendar-screen" class="screen scene-screen">
+    <div class="clouds">
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+    </div>
+    <div class="ground"></div>
+    <div class="progress"><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="scene-title">Help me circle<br>the date!</div>
+    <div class="scene-object" id="calendar-obj" onclick="revealCalendar()">
+      <div class="calendar">
+        <div class="calendar-header">MAY 2026</div>
+        <div class="calendar-body">
+          <span class="day-label">S</span><span class="day-label">M</span><span class="day-label">T</span><span class="day-label">W</span><span class="day-label">T</span><span class="day-label">F</span><span class="day-label">S</span>
+          <span class="empty">.</span><span class="empty">.</span><span class="empty">.</span><span class="empty">.</span><span class="empty">.</span><span>1</span><span id="day2" class="today">2</span>
+          <span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+          <span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+          <span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span>
+          <span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
+          <span>31</span>
+        </div>
+      </div>
+    </div>
+    <div class="tap-hint" id="cal-hint">TAP THE CALENDAR</div>
+    <div class="dialogue" id="cal-dialogue">
+      <div class="dialogue-name">BABY ANDY</div>
+      <div class="dialogue-text">That's when my party is!<br><br><span class="highlight">May 2nd, 2026</span> at <span class="highlight">2:30 PM</span><br><br>Don't be late, partner!</div>
+      <button class="next-btn" onclick="goToScene('map-screen')">NEXT ></button>
+    </div>
+  </div>
+
+  <!-- ============ MAP SCREEN ============ -->
+  <div id="map-screen" class="screen scene-screen">
+    <div class="clouds">
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+    </div>
+    <div class="ground"></div>
+    <div class="progress"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div></div>
+    <div class="scene-title">X marks the spot!</div>
+    <div class="scene-object" id="map-obj" onclick="revealMap()">
+      <div class="treasure-map">
+        <div class="map-path map-path-1"></div>
+        <div class="map-path map-path-2"></div>
+        <div class="map-path map-path-3"></div>
+        <div class="map-x">X</div>
+      </div>
+    </div>
+    <div class="tap-hint" id="map-hint">TAP THE MAP</div>
+    <div class="dialogue" id="map-dialogue">
+      <div class="dialogue-name">BABY ANDY</div>
+      <div class="dialogue-text">That's where the adventure begins!<br><br><span class="highlight">Emy's Place</span><br>9101 SW 45th St<br>Miami, FL 33165<br><br>See y'all there!</div>
+      <button class="next-btn" onclick="goToScene('gift-screen')">NEXT ></button>
+    </div>
+  </div>
+
+  <!-- ============ GIFT SCREEN ============ -->
+  <div id="gift-screen" class="screen scene-screen">
+    <div class="clouds">
+      <div class="cloud c1"></div>
+      <div class="cloud c3"></div>
+    </div>
+    <div class="ground"></div>
+    <div class="progress"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div></div>
+    <div class="scene-title">Every cowboy<br>needs supplies!</div>
+    <div class="scene-object" id="gift-obj" onclick="revealGift()">
+      <div class="gift-box">
+        <div class="bow"><div class="bow-center"></div></div>
+        <div class="ribbon-v"></div>
+        <div class="ribbon-h"></div>
+        <div class="box"></div>
+      </div>
+    </div>
+    <div class="tap-hint" id="gift-hint">TAP THE GIFT</div>
+    <div class="dialogue" id="gift-dialogue">
+      <div class="dialogue-name">BABY ANDY</div>
+      <div class="dialogue-text">To infinity... and the registry!<br><br>Check out my wishlist, partner!<br><br><a class="registry-link" href="https://www.amazon.com/baby-reg/sabrina-fonstecilla-june-2026-miami/3BIOJ51KE3ACA" target="_blank">VIEW REGISTRY</a></div>
+      <button class="next-btn" onclick="goToScene('rsvp-screen')">NEXT ></button>
+    </div>
+  </div>
+
+  <!-- ============ RSVP SCREEN ============ -->
+  <div id="rsvp-screen" class="screen">
+    <div class="clouds">
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+    </div>
+    <div class="baby-andy" style="transform: scale(0.7); margin-bottom: 10px;">
+      <div class="hat"></div>
+      <div class="hat-band"></div>
+      <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="mouth"></div>
+        <div class="cheek left"></div>
+        <div class="cheek right"></div>
+      </div>
+      <div class="body"></div>
+      <div class="leg left"></div>
+      <div class="leg right"></div>
+    </div>
+    <div class="rsvp-form">
+      <h2>Round 'em up!</h2>
+      <div class="rsvp-sub">I need a headcount, partner!<br>RSVP by April 25th</div>
+      <div class="form-group">
+        <label>YOUR NAME</label>
+        <input type="text" id="rsvp-name" placeholder="Howdy, I'm...">
+      </div>
+      <div class="form-group">
+        <label>NUMBER OF GUESTS</label>
+        <select id="rsvp-guests">
+          <option value="">Select...</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5+</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>CAN WE COUNT ON YA?</label>
+        <div class="attend-btns">
+          <button class="attend-btn" onclick="selectAttend(this, 'yes')">YEE-HAW!</button>
+          <button class="attend-btn" onclick="selectAttend(this, 'no')">CAN'T MAKE IT</button>
+        </div>
+      </div>
+      <button class="submit-btn" id="submit-btn" onclick="submitRSVP()" disabled>SEND IT, PARTNER!</button>
+    </div>
+  </div>
+
+  <!-- ============ CONFIRM SCREEN ============ -->
+  <div id="confirm-screen" class="screen">
+    <div class="fireworks" id="fireworks"></div>
+    <div class="stars" id="confirm-stars"></div>
+    <div class="baby-andy" style="margin-bottom: 20px;">
+      <div class="hat"></div>
+      <div class="hat-band"></div>
+      <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="mouth"></div>
+        <div class="cheek left"></div>
+        <div class="cheek right"></div>
+      </div>
+      <div class="body"></div>
+      <div class="leg left"></div>
+      <div class="leg right"></div>
+    </div>
+    <div class="confirm-text" id="confirm-title">YEE-HAW!</div>
+    <div class="confirm-sub" id="confirm-body">
+      Thanks, partner!<br>
+      See ya on May 2nd<br>
+      at 2:30 PM!<br><br>
+      Emy's Place<br>
+      9101 SW 45th St<br>
+      Miami, FL 33165
+    </div>
+    <button class="start-btn" style="font-size: 10px; animation: none; border-color: var(--cloud); color: var(--cloud);" onclick="addToCalendar()">ADD TO CALENDAR</button>
+  </div>
+
+  <!-- ============ DECLINE SCREEN ============ -->
+  <div id="decline-screen" class="screen">
+    <div class="clouds">
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+    </div>
+    <div class="baby-andy" style="margin-bottom: 30px;">
+      <div class="hat"></div>
+      <div class="hat-band"></div>
+      <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="mouth"></div>
+        <div class="cheek left"></div>
+        <div class="cheek right"></div>
+      </div>
+      <div class="body"></div>
+      <div class="leg left"></div>
+      <div class="leg right"></div>
+    </div>
+    <div class="decline-text">
+      Aw shucks...<br><br>
+      We'll miss ya,<br>partner!<br><br>
+      Maybe next rodeo!
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---- AUDIO ----
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+}
+function playTone(freq, duration, type = 'square') {
+  ensureAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+function sfxClick() { playTone(600, 0.1); setTimeout(() => playTone(800, 0.08), 60); }
+function sfxReveal() { playTone(400, 0.12); setTimeout(() => playTone(600, 0.12), 80); setTimeout(() => playTone(900, 0.15), 160); }
+function sfxSuccess() {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'triangle'), i * 120));
+}
+function sfxStart() {
+  [262, 330, 392, 523].forEach((f, i) => setTimeout(() => playTone(f, 0.15), i * 100));
+}
+
+// ---- STARS ----
+function createStars(containerId, count = 30) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 70 + '%';
+    star.style.animationDelay = Math.random() * 2 + 's';
+    star.style.width = star.style.height = (2 + Math.random() * 3) + 'px';
+    container.appendChild(star);
+  }
+}
+createStars('stars', 40);
+
+// ---- TYPEWRITER ----
+function typeWriter(el, text, speed = 40) {
+  el.textContent = '';
+  let i = 0;
+  function tick() {
+    if (i < text.length) {
+      el.textContent += text[i];
+      if (i % 3 === 0) playTone(300 + Math.random() * 200, 0.03);
+      i++;
+      setTimeout(tick, speed);
+    }
+  }
+  tick();
+}
+
+// ---- SCREEN MANAGEMENT ----
+function goToScene(id) {
+  sfxClick();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ---- GAME START ----
+function startGame() {
+  sfxStart();
+  goToScene('intro-screen');
+  const introText = document.getElementById('intro-text');
+  typeWriter(introText, "Howdy! I'm Baby Andy! I'm not here yet, but I'm already planning my first big party! Wanna come along for the ride?", 45);
+}
+
+// ---- CALENDAR ----
+let calRevealed = false;
+function revealCalendar() {
+  if (calRevealed) return;
+  calRevealed = true;
+  sfxReveal();
+  document.getElementById('day2').classList.add('circled');
+  document.getElementById('cal-hint').style.display = 'none';
+  setTimeout(() => {
+    document.getElementById('cal-dialogue').classList.add('show');
+  }, 400);
+}
+
+// ---- MAP ----
+let mapRevealed = false;
+function revealMap() {
+  if (mapRevealed) return;
+  mapRevealed = true;
+  sfxReveal();
+  const x = document.querySelector('.map-x');
+  x.style.animation = 'none';
+  x.style.color = 'var(--green)';
+  x.textContent = '★';
+  document.getElementById('map-hint').style.display = 'none';
+  setTimeout(() => {
+    document.getElementById('map-dialogue').classList.add('show');
+  }, 400);
+}
+
+// ---- GIFT ----
+let giftRevealed = false;
+function revealGift() {
+  if (giftRevealed) return;
+  giftRevealed = true;
+  sfxReveal();
+  document.querySelector('.gift-box').classList.add('opened');
+  document.getElementById('gift-hint').style.display = 'none';
+  setTimeout(() => {
+    document.getElementById('gift-dialogue').classList.add('show');
+  }, 400);
+}
+
+// ---- RSVP ----
+let attending = null;
+function selectAttend(btn, value) {
+  sfxClick();
+  attending = value;
+  document.querySelectorAll('.attend-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  validateForm();
+}
+
+function validateForm() {
+  const name = document.getElementById('rsvp-name').value.trim();
+  const guests = document.getElementById('rsvp-guests').value;
+  document.getElementById('submit-btn').disabled = !(name && guests && attending);
+}
+
+document.getElementById('rsvp-name').addEventListener('input', validateForm);
+document.getElementById('rsvp-guests').addEventListener('change', validateForm);
+
+function submitRSVP() {
+  const name = document.getElementById('rsvp-name').value.trim();
+  const guests = document.getElementById('rsvp-guests').value;
+
+  // Store the RSVP (you can replace this with an API call)
+  const rsvpData = { name, guests, attending, timestamp: new Date().toISOString() };
+  console.log('RSVP submitted:', rsvpData);
+
+  // TODO: Send to backend
+  // fetch('/api/rsvp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(rsvpData) });
+
+  if (attending === 'yes') {
+    sfxSuccess();
+    createStars('confirm-stars', 30);
+    createFireworks();
+    goToScene('confirm-screen');
+  } else {
+    sfxClick();
+    goToScene('decline-screen');
+  }
+}
+
+// ---- FIREWORKS ----
+function createFireworks() {
+  const container = document.getElementById('fireworks');
+  const colors = ['#f5d76e', '#e74c3c', '#6bb5e0', '#7ec88b', '#f2a7b3', '#fff'];
+  for (let i = 0; i < 8; i++) {
+    const fw = document.createElement('div');
+    fw.className = 'firework';
+    fw.style.left = (15 + Math.random() * 70) + '%';
+    fw.style.top = (10 + Math.random() * 50) + '%';
+    fw.style.color = colors[Math.floor(Math.random() * colors.length)];
+    fw.style.background = fw.style.color;
+    fw.style.animationDelay = (Math.random() * 2) + 's';
+    fw.style.animationDuration = (1 + Math.random()) + 's';
+    container.appendChild(fw);
+  }
+}
+
+// ---- ADD TO CALENDAR ----
+function addToCalendar() {
+  sfxClick();
+  const start = '20260502T143000';
+  const end = '20260502T173000';
+  const title = encodeURIComponent("A Boy Story - Andy's Baby Shower");
+  const location = encodeURIComponent('Emy\'s Place, 9101 SW 45th St, Miami, FL 33165');
+  const details = encodeURIComponent("Baby Andy's shower! Registry: https://www.amazon.com/baby-reg/sabrina-fonstecilla-june-2026-miami/3BIOJ51KE3ACA");
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&location=${location}&details=${details}`;
+  window.open(url, '_blank');
+}
+</script>
+
+</body>
+</html>

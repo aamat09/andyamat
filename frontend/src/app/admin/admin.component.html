@@ -1,0 +1,63 @@
+<div class="admin">
+  <h1>A Boy Story — Admin</h1>
+  <p class="subtitle">Andy's Baby Shower Invite Manager</p>
+
+  <div class="stats" *ngIf="invites.length">
+    <div class="stat">
+      <span class="stat-num">{{invites.length}}</span>
+      <span class="stat-label">Invited</span>
+    </div>
+    <div class="stat attending">
+      <span class="stat-num">{{totalAttending}}</span>
+      <span class="stat-label">Attending</span>
+    </div>
+    <div class="stat declined">
+      <span class="stat-num">{{totalDeclined}}</span>
+      <span class="stat-label">Declined</span>
+    </div>
+    <div class="stat pending">
+      <span class="stat-num">{{totalPending}}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+  </div>
+
+  <div class="create-form">
+    <h2>Create Invite</h2>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="newName" placeholder="Guest name" (keyup.enter)="createInvite()">
+      <select [(ngModel)]="newPlusOnes">
+        <option [value]="0">No +1s</option>
+        <option [value]="1">+1</option>
+        <option [value]="2">+2</option>
+        <option [value]="3">+3</option>
+        <option [value]="4">+4</option>
+      </select>
+      <button (click)="createInvite()" [disabled]="!newName.trim()">CREATE</button>
+    </div>
+  </div>
+
+  <div class="error" *ngIf="error">{{error}}</div>
+
+  <div class="invite-list">
+    <h2>Invitations</h2>
+    <div class="invite-card" *ngFor="let inv of invites">
+      <div class="invite-header">
+        <span class="guest-name">{{inv.guest_name}}</span>
+        <span class="badge" [class.yes]="inv.attending===true" [class.no]="inv.attending===false" [class.pending]="inv.attending==null">
+          {{inv.attending===true ? 'ATTENDING' : inv.attending===false ? 'DECLINED' : 'PENDING'}}
+        </span>
+      </div>
+      <div class="invite-meta">
+        <span *ngIf="inv.view_count">Views: {{inv.view_count}}</span>
+        <span *ngIf="inv.num_guests">Guests: {{inv.num_guests}}</span>
+        <span *ngIf="inv.rsvp_name">RSVP by: {{inv.rsvp_name}}</span>
+      </div>
+      <div class="invite-url">
+        <input type="text" readonly [value]="inviteUrl(inv.id)">
+        <button (click)="copyUrl(inv.id)">COPY</button>
+      </div>
+    </div>
+    <div class="empty" *ngIf="!invites.length && !loading">No invites yet. Create one above!</div>
+    <div class="loading" *ngIf="loading">Loading...</div>
+  </div>
+</div>

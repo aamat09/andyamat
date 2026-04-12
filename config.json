@@ -1,0 +1,31 @@
+{
+  "listeners": [
+    {
+      "address": "0.0.0.0",
+      "port": 8080
+    }
+  ],
+  "app": {
+    "threads_num": 4,
+    "document_root": "./frontend/dist/web/browser",
+    "upload_path": "uploads",
+    "log": {
+      "log_path": "./logs",
+      "logfile_base_name": "andyamat",
+      "log_size_limit": 100000000,
+      "log_level": "DEBUG"
+    }
+  },
+  "db_clients": [
+    {
+      "name": "default",
+      "rdbms": "postgresql",
+      "host": "192.168.2.15",
+      "port": 5432,
+      "dbname": "andyamat",
+      "user": "andyamat",
+      "passwd": "",
+      "connection_number": 4
+    }
+  ]
+}
