@@ -25,6 +25,7 @@ echo "  Backend built."
 
 # ---- 3. INSTALL ----
 echo "[3/4] Installing..."
+systemctl stop "$SERVICE" 2>/dev/null || true
 cp "$SCRIPT_DIR/build/andyamat" "$APP_DIR/andyamat"
 cp "$SCRIPT_DIR/config.json" "$APP_DIR/config.json"
 rm -rf "$APP_DIR/frontend"
