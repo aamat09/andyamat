@@ -8,6 +8,30 @@
   min-height: 100dvh;
 }
 
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .user-info {
+    font-size: 7px;
+    color: #999;
+  }
+
+  .logout-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    padding: 6px 12px;
+    background: none;
+    border: 2px solid #e74c3c;
+    border-radius: 3px;
+    color: #e74c3c;
+    cursor: pointer;
+  }
+}
+
 h1 {
   font-size: 16px;
   color: #8B6914;

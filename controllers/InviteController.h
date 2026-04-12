@@ -7,8 +7,8 @@ class InviteController : public HttpController<InviteController> {
 public:
     METHOD_LIST_BEGIN
     ADD_METHOD_TO(InviteController::getInvite, "/api/invites/{id}", Get);
-    ADD_METHOD_TO(InviteController::createInvite, "/api/invites", Post);
-    ADD_METHOD_TO(InviteController::listInvites, "/api/admin/invites", Get);
+    ADD_METHOD_TO(InviteController::createInvite, "/api/invites", Post, "AdminFilter");
+    ADD_METHOD_TO(InviteController::listInvites, "/api/admin/invites", Get, "AdminFilter");
     ADD_METHOD_TO(InviteController::recordView, "/api/invites/{id}/view", Post);
     ADD_METHOD_TO(InviteController::submitRsvp, "/api/rsvp", Post);
     METHOD_LIST_END

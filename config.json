@@ -9,6 +9,8 @@
     "threads_num": 4,
     "document_root": "./frontend/dist/web/browser",
     "upload_path": "uploads",
+    "enable_session": true,
+    "session_timeout": 3600,
     "log": {
       "log_path": "./logs",
       "logfile_base_name": "andyamat",

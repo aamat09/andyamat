@@ -27,5 +27,16 @@ CREATE TABLE invite_views (
     ip_address      TEXT
 );
 
+CREATE TABLE admin_users (
+    id              SERIAL PRIMARY KEY,
+    username        TEXT UNIQUE NOT NULL,
+    password_hash   TEXT NOT NULL,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE INDEX idx_rsvps_invitation ON rsvps(invitation_id);
 CREATE INDEX idx_views_invitation ON invite_views(invitation_id);
+
+-- Seed an initial admin (change password after first login)
+INSERT INTO admin_users (username, password_hash)
+VALUES ('admin', crypt('changeme', gen_salt('bf')));

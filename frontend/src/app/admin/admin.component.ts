@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService, Invitation } from '../api.service';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-admin',
@@ -18,7 +20,21 @@ export class AdminComponent implements OnInit {
   error = '';
   baseUrl = '';
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private router: Router,
+  ) {}
+
+  get currentUser(): string {
+    return this.auth.username;
+  }
+
+  logout() {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']);
+    });
+  }
 
   ngOnInit() {
     this.baseUrl = window.location.origin;
