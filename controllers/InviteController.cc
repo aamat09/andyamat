@@ -5,7 +5,8 @@
 
 namespace {
 void sendRsvpNotification(const std::string &guestName, bool attending,
-                          int numGuests, const std::string &invitationId) {
+                          int numGuests, const std::string &invitationId,
+                          const std::string &guestEmail) {
     std::string status = attending ? "ACCEPTED" : "DECLINED";
     std::string emoji = attending ? "YEE-HAW!" : "Aw shucks...";
     std::string subject = "RSVP " + status + " - " + guestName;
@@ -15,6 +16,7 @@ void sendRsvpNotification(const std::string &guestName, bool attending,
         "Guest: " + guestName + "\\n"
         "Status: " + status + "\\n"
         "Number of guests: " + std::to_string(numGuests) + "\\n"
+        "Email: " + (guestEmail.empty() ? "(not provided)" : guestEmail) + "\\n"
         "Invitation ID: " + invitationId + "\\n\\n"
         "View all RSVPs at https://andyamat.com/admin";
 
@@ -195,11 +197,12 @@ void InviteController::submitRsvp(
     auto attending = (*json)["attending"].asBool();
     auto ngVal = json->get("num_guests", 1);
     int numGuests = ngVal.isString() ? std::stoi(ngVal.asString()) : ngVal.asInt();
+    auto guestEmail = json->get("guest_email", "").asString();
 
     auto db = app().getDbClient();
     db->execSqlAsync(
-        "INSERT INTO rsvps (invitation_id, name, num_guests, attending) VALUES ($1, $2, $3, $4) RETURNING id",
-        [callback, name, attending, numGuests, invId](const Result &r) {
+        "INSERT INTO rsvps (invitation_id, name, num_guests, attending, guest_email) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+        [callback, name, attending, numGuests, invId, guestEmail](const Result &r) {
             Json::Value json;
             json["ok"] = true;
             json["rsvp_id"] = r[0]["id"].as<int>();
@@ -208,7 +211,7 @@ void InviteController::submitRsvp(
             callback(resp);
 
             // Send email notification asynchronously
-            std::thread(sendRsvpNotification, name, attending, numGuests, invId).detach();
+            std::thread(sendRsvpNotification, name, attending, numGuests, invId, guestEmail).detach();
         },
         [callback](const DrogonDbException &e) {
             Json::Value json;
@@ -217,5 +220,38 @@ void InviteController::submitRsvp(
             resp->setStatusCode(k500InternalServerError);
             callback(resp);
         },
-        invId, name, numGuests, attending);
+        invId, name, numGuests, attending, guestEmail);
+}
+
+void InviteController::updateRsvpEmail(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback)
+{
+    auto json = req->getJsonObject();
+    if (!json || !json->isMember("invitation_id") || !json->isMember("guest_email")) {
+        auto resp = HttpResponse::newHttpJsonResponse(Json::Value{Json::objectValue});
+        resp->setStatusCode(k400BadRequest);
+        callback(resp);
+        return;
+    }
+
+    auto invId = (*json)["invitation_id"].asString();
+    auto email = (*json)["guest_email"].asString();
+
+    auto db = app().getDbClient();
+    db->execSqlAsync(
+        "UPDATE rsvps SET guest_email = $1 WHERE invitation_id = $2",
+        [callback](const Result &) {
+            Json::Value json;
+            json["ok"] = true;
+            callback(HttpResponse::newHttpJsonResponse(json));
+        },
+        [callback](const DrogonDbException &e) {
+            Json::Value json;
+            json["error"] = e.base().what();
+            auto resp = HttpResponse::newHttpJsonResponse(json);
+            resp->setStatusCode(k500InternalServerError);
+            callback(resp);
+        },
+        email, invId);
 }

@@ -43,6 +43,13 @@ export class ApiService {
     return this.http.get<Invitation[]>(`${this.base}/admin/invites`);
   }
 
+  updateRsvpEmail(invitationId: string, email: string): Observable<any> {
+    return this.http.post(`${this.base}/rsvp/email`, {
+      invitation_id: invitationId,
+      guest_email: email,
+    });
+  }
+
   createInvite(guestName: string, plusOnes: number): Observable<Invitation> {
     return this.http.post<Invitation>(`${this.base}/invites`, {
       guest_name: guestName,

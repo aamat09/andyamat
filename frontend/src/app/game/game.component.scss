@@ -121,3 +121,20 @@ canvas {
 
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
+
+.skip-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  margin-top: 8px;
+  text-decoration: underline;
+}
+
+.email-card .rsvp-sub {
+  line-height: 2;
+}

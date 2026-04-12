@@ -30,4 +30,18 @@
       <button class="submit-btn" [disabled]="!canSubmit()" (click)="submitRsvp()">SEND IT, PARTNER!</button>
     </div>
   </div>
+
+  <!-- Email signup overlay (after accepting) -->
+  <div class="rsvp-overlay" *ngIf="showEmailSignup">
+    <div class="rsvp-card email-card">
+      <div class="rsvp-title">One more thing!</div>
+      <div class="rsvp-sub">Want fun updates from<br>Baby Andy leading up<br>to the big day?</div>
+      <div class="form-group">
+        <label>YOUR EMAIL</label>
+        <input type="email" [(ngModel)]="guestEmail" placeholder="cowboy@email.com" (keyup.enter)="submitEmail()">
+      </div>
+      <button class="submit-btn" [disabled]="!guestEmail.trim()" (click)="submitEmail()">SIGN ME UP, PARTNER!</button>
+      <button class="skip-btn" (click)="skipEmail()">SKIP</button>
+    </div>
+  </div>
 </div>

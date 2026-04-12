@@ -226,9 +226,11 @@ export class GameComponent implements AfterViewInit, OnDestroy {
 
   scene: Scene = 'title';
   showRsvp = false;
+  showEmailSignup = false;
   rsvpName = '';
   rsvpGuests = 0;
   rsvpAttending: boolean | null = null;
+  guestEmail = '';
 
   // scene-specific state
   private titleBlink = true;
@@ -910,11 +912,28 @@ export class GameComponent implements AfterViewInit, OnDestroy {
   private afterSubmit() {
     this.showRsvp = false;
     if (this.rsvpAttending) {
-      this.audio.fanfare();
-      this.scene = 'confirm';
+      // Show email signup before confirm
+      this.showEmailSignup = true;
     } else {
       this.scene = 'decline';
     }
+  }
+
+  submitEmail() {
+    if (!this.guestEmail.trim()) return;
+    // Update the RSVP with the email
+    this.api.updateRsvpEmail(this.inviteId, this.guestEmail.trim()).subscribe({
+      error: () => {} // silent fail
+    });
+    this.showEmailSignup = false;
+    this.audio.fanfare();
+    this.scene = 'confirm';
+  }
+
+  skipEmail() {
+    this.showEmailSignup = false;
+    this.audio.fanfare();
+    this.scene = 'confirm';
   }
 
   private addToCalendar() {

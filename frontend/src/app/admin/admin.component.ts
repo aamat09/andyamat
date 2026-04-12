@@ -57,7 +57,7 @@ export class AdminComponent implements OnInit {
 
   createInvite() {
     if (!this.newName.trim()) return;
-    this.api.createInvite(this.newName.trim(), this.newPlusOnes).subscribe({
+    this.api.createInvite(this.newName.trim(), Number(this.newPlusOnes)).subscribe({
       next: (inv) => {
         this.invites.unshift(inv);
         this.newName = '';
