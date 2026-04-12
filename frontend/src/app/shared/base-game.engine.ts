@@ -237,7 +237,10 @@ export abstract class BaseGameEngine implements AfterViewInit, OnDestroy {
   // ---- RSVP LOGIC ----
 
   canSubmit(): boolean {
-    return !!(this.rsvpName.trim() && this.rsvpGuests > 0 && this.rsvpAttending !== null);
+    if (this.rsvpAttending === null) return false;
+    if (this.rsvpAttending === false) return true;
+    // Attending: need name + guest count
+    return !!(this.rsvpName.trim() && this.rsvpGuests > 0);
   }
 
   submitRsvp() {
