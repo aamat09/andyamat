@@ -8,25 +8,60 @@ void sendRsvpNotification(const std::string &guestName, bool attending,
                           int numGuests, const std::string &invitationId,
                           const std::string &guestEmail) {
     std::string status = attending ? "ACCEPTED" : "DECLINED";
-    std::string emoji = attending ? "YEE-HAW!" : "Aw shucks...";
+    std::string statusColor = attending ? "#7ec88b" : "#e74c3c";
+    std::string emoji = attending ? "YEE-HAW! 🤠" : "Aw shucks... 😢";
     std::string subject = "RSVP " + status + " - " + guestName;
 
-    std::string body =
-        emoji + "\\n\\n"
-        "Guest: " + guestName + "\\n"
-        "Status: " + status + "\\n"
-        "Number of guests: " + std::to_string(numGuests) + "\\n"
-        "Email: " + (guestEmail.empty() ? "(not provided)" : guestEmail) + "\\n"
-        "Invitation ID: " + invitationId + "\\n\\n"
-        "View all RSVPs at https://andyamat.com/admin";
+    std::string html = R"(
+<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;">
+  <div style="background:#1a1a3e;color:#f5d76e;padding:20px;border-radius:8px 8px 0 0;text-align:center;">
+    <h1 style="margin:0;font-size:24px;">A Boy Story</h1>
+    <p style="margin:4px 0 0;color:#a8d4f0;font-size:12px;">RSVP Notification</p>
+  </div>
+  <div style="background:#f0f7ff;padding:24px;border:2px solid #ddd;border-top:none;border-radius:0 0 8px 8px;">
+    <h2 style="color:)" + statusColor + R"(;margin:0 0 16px;">)" + emoji + R"(</h2>
+    <table style="width:100%;font-size:14px;border-collapse:collapse;">
+      <tr><td style="padding:8px 0;color:#999;">Guest</td><td style="padding:8px 0;font-weight:bold;">)" + guestName + R"(</td></tr>
+      <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;font-weight:bold;color:)" + statusColor + R"(;">)" + status + R"(</td></tr>
+      <tr><td style="padding:8px 0;color:#999;">Guests</td><td style="padding:8px 0;font-weight:bold;">)" + std::to_string(numGuests) + R"(</td></tr>
+      <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;">)" + (guestEmail.empty() ? "<em>not provided</em>" : guestEmail) + R"(</td></tr>
+      <tr><td style="padding:8px 0;color:#999;">Invite ID</td><td style="padding:8px 0;font-family:monospace;">)" + invitationId + R"(</td></tr>
+    </table>
+    <div style="margin-top:20px;text-align:center;">
+      <a href="https://andyamat.com/admin" style="background:#f5d76e;color:#6B4F10;padding:10px 24px;border-radius:4px;text-decoration:none;font-weight:bold;display:inline-block;">View All RSVPs</a>
+    </div>
+  </div>
+</div>)";
 
     auto sendTo = [&](const std::string &to) {
+        // Write HTML to temp file to avoid shell escaping issues
+        std::string tmpFile = "/tmp/andyamat_email_" + invitationId + "_" + to + ".json";
+        std::string msgJson = R"({"Subject":{"Data":")" + subject + R"("},"Body":{"Html":{"Data":")" +
+            // Escape quotes in HTML for JSON
+            [&]() {
+                std::string escaped;
+                for (char c : html) {
+                    if (c == '"') escaped += "\\\"";
+                    else if (c == '\n') escaped += "";
+                    else escaped += c;
+                }
+                return escaped;
+            }() + R"("}}})";
+
+        // Write JSON message to file
+        FILE *f = fopen(tmpFile.c_str(), "w");
+        if (f) {
+            fputs(msgJson.c_str(), f);
+            fclose(f);
+        }
+
         std::string cmd =
             "aws ses send-email"
-            " --from 'no_reply@andyamat.com'"
+            " --from 'Baby Andy <no_reply@andyamat.com>'"
             " --destination 'ToAddresses=" + to + "'"
-            " --message 'Subject={Data=\"" + subject + "\"},Body={Text={Data=\"" + body + "\"}}'"
-            " --region us-east-1 >/dev/null 2>&1 &";
+            " --message file://" + tmpFile +
+            " --region us-east-1 >/dev/null 2>&1;"
+            " rm -f " + tmpFile + " &";
         system(cmd.c_str());
     };
 
