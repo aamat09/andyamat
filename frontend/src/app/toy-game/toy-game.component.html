@@ -1,0 +1,47 @@
+<div class="game-container" #container>
+  <canvas #gameCanvas
+    (click)="onTap($event)"
+    (touchstart)="onTap($event)">
+  </canvas>
+
+  <!-- RSVP overlay -->
+  <div class="rsvp-overlay" *ngIf="showRsvp">
+    <div class="rsvp-card">
+      <div class="rsvp-title">You've Got a Friend in Me!</div>
+      <div class="rsvp-sub">Andy needs the headcount!<br>RSVP by April 25th</div>
+      <div class="form-group">
+        <label>YOUR NAME</label>
+        <input type="text" [(ngModel)]="rsvpName" placeholder="My name is...">
+      </div>
+      <div class="form-group">
+        <label>NUMBER OF GUESTS</label>
+        <select [(ngModel)]="rsvpGuests">
+          <option value="0" disabled selected>Select...</option>
+          <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{n}}{{n===5?'+':''}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>CAN WE COUNT ON YOU?</label>
+        <div class="attend-btns">
+          <button [class.selected]="rsvpAttending===true" (click)="rsvpAttending=true">TO INFINITY!</button>
+          <button [class.decline]="rsvpAttending===false" [class.selected]="rsvpAttending===false" (click)="rsvpAttending=false">NOT THIS TIME</button>
+        </div>
+      </div>
+      <button class="submit-btn" [disabled]="!canSubmit()" (click)="submitRsvp()">TO THE RSVP... AND BEYOND!</button>
+    </div>
+  </div>
+
+  <!-- Email signup overlay -->
+  <div class="rsvp-overlay" *ngIf="showEmailSignup">
+    <div class="rsvp-card email-card">
+      <div class="rsvp-title">One more thing!</div>
+      <div class="rsvp-sub">Want fun updates from<br>Baby Andy leading up<br>to the big day?</div>
+      <div class="form-group">
+        <label>YOUR EMAIL</label>
+        <input type="email" [(ngModel)]="guestEmail" placeholder="friend@email.com" (keyup.enter)="submitEmail()">
+      </div>
+      <button class="submit-btn" [disabled]="!guestEmail.trim()" (click)="submitEmail()">COUNT ME IN!</button>
+      <button class="skip-btn" (click)="skipEmail()">SKIP</button>
+    </div>
+  </div>
+</div>

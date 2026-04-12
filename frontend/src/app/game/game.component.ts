@@ -1,10 +1,7 @@
-import {
-  Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, NgZone,
-} from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { ApiService } from '../api.service';
+import { BaseGameEngine } from '../shared/base-game.engine';
 
 // ---- RETRO AUDIO ----
 class RetroAudio {
@@ -36,7 +33,6 @@ function drawBabyAndy(ctx: CanvasRenderingContext2D, x: number, y: number, scale
   ctx.translate(x, y);
   ctx.scale(scale, scale);
 
-  // slight waddle
   const wobble = Math.sin(frame * 0.15) * 3;
   ctx.rotate(wobble * Math.PI / 180);
 
@@ -44,7 +40,6 @@ function drawBabyAndy(ctx: CanvasRenderingContext2D, x: number, y: number, scale
   ctx.fillStyle = '#8B6914';
   ctx.fillRect(-22, -48, 44, 14);
   ctx.fillRect(-16, -36, 32, 10);
-  // Hat band
   ctx.fillStyle = '#f5d76e';
   ctx.fillRect(-22, -38, 44, 4);
 
@@ -67,7 +62,7 @@ function drawBabyAndy(ctx: CanvasRenderingContext2D, x: number, y: number, scale
   ctx.beginPath(); ctx.arc(-11, -12, 3, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(11, -12, 3, 0, Math.PI * 2); ctx.fill();
 
-  // Mouth (smile)
+  // Mouth
   ctx.strokeStyle = '#e88';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -147,7 +142,6 @@ function drawDialogueBox(
   const boxX = 16;
   const boxW = W - 32;
 
-  // Box bg
   ctx.fillStyle = '#ffffffee';
   roundRect(ctx, boxX, boxY, boxW, boxH, 8);
   ctx.fill();
@@ -155,18 +149,15 @@ function drawDialogueBox(
   ctx.lineWidth = 3;
   ctx.stroke();
 
-  // Speaker
   ctx.fillStyle = '#8B6914';
   ctx.font = '9px "Press Start 2P", monospace';
   ctx.textAlign = 'left';
   ctx.fillText('> ' + speaker, boxX + 12, boxY + 20);
 
-  // Text lines
   ctx.font = '9px "Press Start 2P", monospace';
   lines.forEach((line, i) => {
     if (highlight && i === highlight.line) {
       ctx.fillStyle = highlight.color;
-      // highlight bg
       const tw = ctx.measureText(line).width;
       ctx.fillStyle = '#fef3c7';
       ctx.fillRect(boxX + 12, boxY + 32 + i * lineH, tw + 8, lineH - 2);
@@ -177,7 +168,6 @@ function drawDialogueBox(
     ctx.fillText(line, boxX + 14, boxY + 44 + i * lineH);
   });
 
-  // Registry button (top-right of box)
   if (registryBtn) {
     const btnW = 150;
     const btnX = boxX + boxW - btnW - 12;
@@ -192,7 +182,6 @@ function drawDialogueBox(
     ctx.textAlign = 'left';
   }
 
-  // Next arrow
   if (showNext) {
     ctx.fillStyle = '#6bb5e0';
     ctx.font = '10px "Press Start 2P", monospace';
@@ -201,9 +190,6 @@ function drawDialogueBox(
   }
 }
 
-// ---- SCENES ----
-type Scene = 'title' | 'intro' | 'calendar' | 'map' | 'gift' | 'rsvp' | 'confirm' | 'decline';
-
 @Component({
   selector: 'app-game',
   standalone: true,
@@ -211,56 +197,27 @@ type Scene = 'title' | 'intro' | 'calendar' | 'map' | 'gift' | 'rsvp' | 'confirm
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss',
 })
-export class GameComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('gameCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('container') containerRef!: ElementRef<HTMLDivElement>;
-
-  private ctx!: CanvasRenderingContext2D;
-  private W = 480;
-  private H = 720;
-  private frame = 0;
-  private animId = 0;
+export class GameComponent extends BaseGameEngine {
   private audio = new RetroAudio();
-  private inviteId = '';
-  private guestName = '';
-
-  scene: Scene = 'title';
-  showRsvp = false;
-  showEmailSignup = false;
-  rsvpName = '';
-  rsvpGuests = 0;
-  rsvpAttending: boolean | null = null;
-  guestEmail = '';
-
-  // scene-specific state
-  private titleBlink = true;
-  private introText = '';
-  private introTarget = "Howdy! I'm Baby Andy! I ain't here yet, but I'm already planning my first big party! Wanna come along?";
-  private introTyped = 0;
-  private introReady = false;
-  private calCircled = false;
-  private calDialogue = false;
-  private mapRevealed = false;
-  private mapDialogue = false;
-  private giftOpened = false;
-  private giftDialogue = false;
   private confirmFireworks: { x: number; y: number; color: string; t: number }[] = [];
 
-  // cloud positions
   private clouds = [
     { x: -50, y: 50, w: 80, speed: 0.3 },
     { x: 200, y: 80, w: 60, speed: 0.2 },
     { x: 400, y: 35, w: 100, speed: 0.35 },
   ];
 
-  // stars
   private stars: { x: number; y: number; r: number; phase: number }[] = [];
 
-  constructor(
-    private route: ActivatedRoute,
-    private api: ApiService,
-    private zone: NgZone,
-  ) {
+  protected get introTarget(): string {
+    return "Howdy! I'm Baby Andy! I ain't here yet, but I'm already planning my first big party! Wanna come along?";
+  }
+
+  protected override get calendarTitle(): string {
+    return "A Boy Story - Andy's Baby Shower";
+  }
+
+  protected override onInit() {
     for (let i = 0; i < 50; i++) {
       this.stars.push({
         x: Math.random() * this.W,
@@ -271,76 +228,25 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  ngAfterViewInit() {
-    const canvas = this.canvasRef.nativeElement;
-    canvas.width = this.W;
-    canvas.height = this.H;
-    this.ctx = canvas.getContext('2d')!;
-
-    this.route.paramMap.subscribe(params => {
-      this.inviteId = params.get('id') || '';
-      if (this.inviteId) {
-        // Record the view
-        this.api.recordView(this.inviteId).subscribe({
-          error: () => {} // silent fail if API not running
-        });
-        // Get guest name
-        this.api.getInvite(this.inviteId).subscribe({
-          next: inv => { this.guestName = inv.guest_name; },
-          error: () => { this.guestName = 'Partner'; }
-        });
-      }
-    });
-
-    this.zone.runOutsideAngular(() => {
-      this.loop();
-    });
+  protected override onEmailDone() {
+    this.audio.fanfare();
   }
 
-  ngOnDestroy() {
-    cancelAnimationFrame(this.animId);
-  }
-
-  private loop() {
-    this.frame++;
-    this.render();
-    this.animId = requestAnimationFrame(() => this.loop());
-  }
-
-  // ---- RENDERING ----
-  private render() {
-    const ctx = this.ctx;
-    const W = this.W;
-    const H = this.H;
-
-    switch (this.scene) {
-      case 'title': this.renderTitle(ctx, W, H); break;
-      case 'intro': this.renderIntro(ctx, W, H); break;
-      case 'calendar': this.renderCalendar(ctx, W, H); break;
-      case 'map': this.renderMap(ctx, W, H); break;
-      case 'gift': this.renderGift(ctx, W, H); break;
-      case 'rsvp': this.renderRsvp(ctx, W, H); break;
-      case 'confirm': this.renderConfirm(ctx, W, H); break;
-      case 'decline': this.renderDecline(ctx, W, H); break;
-    }
-  }
+  // ---- BACKGROUNDS ----
 
   private drawSkyAndGround(ctx: CanvasRenderingContext2D, W: number, H: number) {
-    // Sky gradient
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, '#d4e9f7');
     grad.addColorStop(0.7, '#a8d4f0');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // Clouds
     this.clouds.forEach(c => {
       c.x += c.speed;
       if (c.x > W + 60) c.x = -80;
       drawCloud(ctx, c.x, c.y, c.w);
     });
 
-    // Ground
     ctx.fillStyle = '#7ec88b';
     ctx.fillRect(0, H - 100, W, 100);
     ctx.fillStyle = '#5ba86c';
@@ -367,9 +273,9 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // ---- TITLE ----
-  private renderTitle(ctx: CanvasRenderingContext2D, W: number, H: number) {
-    // Night sky
+  // ---- RENDER SCENES ----
+
+  protected renderTitle(ctx: CanvasRenderingContext2D, W: number, H: number) {
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, '#1a1a3e');
     grad.addColorStop(0.5, '#2d2d6b');
@@ -377,13 +283,11 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // Stars
     this.stars.forEach(s => {
       const alpha = 0.3 + 0.7 * Math.abs(Math.sin(this.frame * 0.02 + s.phase));
       drawStar(ctx, s.x, s.y, s.r, alpha);
     });
 
-    // Title
     ctx.fillStyle = '#f5d76e';
     ctx.font = '32px "Press Start 2P", monospace';
     ctx.textAlign = 'center';
@@ -397,21 +301,17 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
 
-    // Subtitle
     ctx.fillStyle = '#f0f7ffdd';
     ctx.font = '10px "Press Start 2P", monospace';
     ctx.fillText("Welcome to Andy's", W / 2, H * 0.42);
     ctx.fillText('Baby Shower', W / 2, H * 0.42 + 20);
 
-    // Baby Andy
     drawBabyAndy(ctx, W / 2, H * 0.58, 1.2, 0);
 
-    // Blink "TAP TO START"
     if (Math.floor(this.frame / 30) % 2 === 0) {
       ctx.fillStyle = '#f5d76e';
       ctx.font = '14px "Press Start 2P", monospace';
       ctx.fillText('TAP TO START', W / 2, H * 0.82);
-      // Border around text
       ctx.strokeStyle = '#f5d76e';
       ctx.lineWidth = 2;
       roundRect(ctx, W / 2 - 110, H * 0.82 - 18, 220, 32, 4);
@@ -419,48 +319,36 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // ---- INTRO ----
-  private renderIntro(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  protected renderIntro(ctx: CanvasRenderingContext2D, W: number, H: number) {
     this.drawSkyAndGround(ctx, W, H);
     this.drawProgress(ctx, W, 1);
 
-    // Baby Andy walking
     drawBabyAndy(ctx, W / 2, H * 0.35, 1.3, this.frame);
 
-    // Typewriter effect
-    if (this.introTyped < this.introTarget.length) {
-      this.introTyped++;
-      this.introText = this.introTarget.slice(0, this.introTyped);
-      if (this.introTyped % 2 === 0) this.audio.typeChar();
-      if (this.introTyped === this.introTarget.length) {
-        this.introReady = true;
-      }
+    this.tickTypewriter();
+    if (this.introTyped < this.introTarget.length && this.introTyped % 2 === 0) {
+      this.audio.typeChar();
     }
 
-    // Wrap text into lines
     const lines = this.wrapText(this.introText, W - 70, '9px "Press Start 2P", monospace');
     drawDialogueBox(ctx, W, H, 'BABY ANDY', lines, this.introReady);
   }
 
-  // ---- CALENDAR ----
-  private renderCalendar(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  protected renderCalendar(ctx: CanvasRenderingContext2D, W: number, H: number) {
     this.drawSkyAndGround(ctx, W, H);
     this.drawProgress(ctx, W, 2);
 
-    // Scene title
     ctx.fillStyle = '#4a4a6a';
     ctx.font = '11px "Press Start 2P", monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Help me circle', W / 2, 60);
     ctx.fillText('the date!', W / 2, 78);
 
-    // Calendar
     const calX = W / 2 - 90;
     const calY = 110;
     const calW = 180;
     const calH = 200;
 
-    // Calendar bg
     ctx.fillStyle = '#fff';
     roundRect(ctx, calX, calY, calW, calH, 6);
     ctx.fill();
@@ -468,7 +356,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Header
     ctx.fillStyle = '#e74c3c';
     ctx.fillRect(calX + 3, calY + 3, calW - 6, 28);
     ctx.fillStyle = '#fff';
@@ -476,7 +363,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.textAlign = 'center';
     ctx.fillText('MAY 2026', W / 2, calY + 22);
 
-    // Day labels
     const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     ctx.fillStyle = '#999';
     ctx.font = '7px "Press Start 2P", monospace';
@@ -484,7 +370,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
       ctx.fillText(d, calX + 16 + i * 22, calY + 52);
     });
 
-    // Day numbers — May 2026 starts on Friday (index 5)
     const startDay = 5;
     ctx.font = '8px "Press Start 2P", monospace';
     for (let d = 1; d <= 31; d++) {
@@ -495,14 +380,12 @@ export class GameComponent implements AfterViewInit, OnDestroy {
       const dy = calY + 70 + row * 22;
 
       if (d === 2) {
-        // Highlight day 2
         ctx.fillStyle = '#f5d76e';
         ctx.beginPath();
         ctx.arc(dx, dy - 3, 10, 0, Math.PI * 2);
         ctx.fill();
 
         if (this.calCircled) {
-          // Red circle
           ctx.strokeStyle = '#e74c3c';
           ctx.lineWidth = 2.5;
           ctx.beginPath();
@@ -521,7 +404,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     }
 
     if (!this.calCircled) {
-      // Tap hint
       if (Math.floor(this.frame / 25) % 2 === 0) {
         ctx.fillStyle = '#4a4a6a';
         ctx.font = '8px "Press Start 2P", monospace';
@@ -540,8 +422,7 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // ---- MAP ----
-  private renderMap(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  protected renderMap(ctx: CanvasRenderingContext2D, W: number, H: number) {
     this.drawSkyAndGround(ctx, W, H);
     this.drawProgress(ctx, W, 3);
 
@@ -550,7 +431,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.textAlign = 'center';
     ctx.fillText('X marks the spot!', W / 2, 60);
 
-    // Treasure map
     const mapX = W / 2 - 100;
     const mapY = 100;
     const mapW = 200;
@@ -563,14 +443,12 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Dashed border inside
     ctx.setLineDash([4, 4]);
     ctx.strokeStyle = '#8B691444';
     roundRect(ctx, mapX + 8, mapY + 8, mapW - 16, mapH - 16, 2);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Dashed paths
     ctx.strokeStyle = '#8B691444';
     ctx.lineWidth = 2;
     ctx.setLineDash([3, 3]);
@@ -582,7 +460,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // X or star
     ctx.textAlign = 'center';
     if (this.mapRevealed) {
       ctx.fillStyle = '#7ec88b';
@@ -620,8 +497,7 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // ---- GIFT ----
-  private renderGift(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  protected renderGift(ctx: CanvasRenderingContext2D, W: number, H: number) {
     this.drawSkyAndGround(ctx, W, H);
     this.drawProgress(ctx, W, 4);
 
@@ -640,7 +516,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
       ctx.translate(shake, 0);
     }
 
-    // Gift box
     ctx.fillStyle = '#6bb5e0';
     roundRect(ctx, gx - 55, gy, 110, 80, 4);
     ctx.fill();
@@ -648,14 +523,10 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Ribbon vertical
     ctx.fillStyle = '#f5d76e';
     ctx.fillRect(gx - 8, gy, 16, 80);
-
-    // Ribbon horizontal
     ctx.fillRect(gx - 55, gy + 32, 110, 16);
 
-    // Bow
     ctx.strokeStyle = '#f5d76e';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -665,7 +536,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.ellipse(gx + 14, gy - 6, 16, 12, 0.3, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Bow center
     ctx.fillStyle = '#f5d76e';
     ctx.beginPath();
     ctx.arc(gx, gy - 4, 7, 0, Math.PI * 2);
@@ -694,15 +564,12 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // ---- RSVP (clean background behind the DOM overlay) ----
-  private renderRsvp(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  protected renderRsvp(ctx: CanvasRenderingContext2D, W: number, H: number) {
     this.drawSkyAndGround(ctx, W, H);
     drawBabyAndy(ctx, W / 2, H * 0.28, 1, this.frame);
   }
 
-  // ---- CONFIRM ----
-  private renderConfirm(ctx: CanvasRenderingContext2D, W: number, H: number) {
-    // Night sky
+  protected renderConfirm(ctx: CanvasRenderingContext2D, W: number, H: number) {
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, '#1a1a3e');
     grad.addColorStop(0.6, '#2d2d6b');
@@ -710,13 +577,11 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // Stars
     this.stars.forEach(s => {
       const alpha = 0.3 + 0.7 * Math.abs(Math.sin(this.frame * 0.02 + s.phase));
       drawStar(ctx, s.x, s.y, s.r, alpha);
     });
 
-    // Fireworks
     this.confirmFireworks.forEach(fw => {
       fw.t += 0.02;
       const burst = Math.min(fw.t * 60, 50);
@@ -731,7 +596,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
       }
       ctx.globalAlpha = 1;
     });
-    // Respawn dead fireworks
     this.confirmFireworks = this.confirmFireworks.filter(fw => fw.t < 1.5);
     if (this.frame % 40 === 0 && this.confirmFireworks.length < 6) {
       this.confirmFireworks.push({
@@ -770,7 +634,6 @@ export class GameComponent implements AfterViewInit, OnDestroy {
       ctx.fillText(line, W / 2, H * 0.56 + i * 18);
     });
 
-    // Add to calendar button
     ctx.strokeStyle = '#f0f7ffcc';
     ctx.lineWidth = 2;
     const btnY = H * 0.56 + infoLines.length * 18 + 20;
@@ -781,8 +644,7 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     ctx.fillText('ADD TO CALENDAR', W / 2, btnY + 21);
   }
 
-  // ---- DECLINE ----
-  private renderDecline(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  protected renderDecline(ctx: CanvasRenderingContext2D, W: number, H: number) {
     this.drawSkyAndGround(ctx, W, H);
     drawBabyAndy(ctx, W / 2, H * 0.35, 1.3, 0);
 
@@ -793,176 +655,68 @@ export class GameComponent implements AfterViewInit, OnDestroy {
     lines.forEach((l, i) => ctx.fillText(l, W / 2, H * 0.55 + i * 24));
   }
 
-  // ---- TAP HANDLER ----
-  onTap(event: Event) {
-    event.preventDefault();
+  // ---- TAP HANDLERS ----
 
-    // Get tap position relative to canvas
-    const canvas = this.canvasRef.nativeElement;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = this.W / rect.width;
-    const scaleY = this.H / rect.height;
-
-    let clientX: number, clientY: number;
-    if (event instanceof TouchEvent) {
-      clientX = event.touches[0].clientX;
-      clientY = event.touches[0].clientY;
-    } else {
-      clientX = (event as MouseEvent).clientX;
-      clientY = (event as MouseEvent).clientY;
-    }
-    const tapX = (clientX - rect.left) * scaleX;
-    const tapY = (clientY - rect.top) * scaleY;
-
-    switch (this.scene) {
-      case 'title':
-        this.audio.click();
-        this.scene = 'intro';
-        this.introTyped = 0;
-        this.introText = '';
-        this.introReady = false;
-        break;
-
-      case 'intro':
-        if (!this.introReady) {
-          // Skip typewriter
-          this.introTyped = this.introTarget.length;
-          this.introText = this.introTarget;
-          this.introReady = true;
-        } else {
-          this.audio.click();
-          this.scene = 'calendar';
-        }
-        break;
-
-      case 'calendar':
-        if (!this.calCircled) {
-          this.audio.reveal();
-          this.calCircled = true;
-          setTimeout(() => { this.calDialogue = true; }, 300);
-        } else if (this.calDialogue) {
-          this.audio.click();
-          this.scene = 'map';
-        }
-        break;
-
-      case 'map':
-        if (!this.mapRevealed) {
-          this.audio.reveal();
-          this.mapRevealed = true;
-          setTimeout(() => { this.mapDialogue = true; }, 300);
-        } else if (this.mapDialogue) {
-          this.audio.click();
-          this.scene = 'gift';
-        }
-        break;
-
-      case 'gift':
-        if (!this.giftOpened) {
-          this.audio.reveal();
-          this.giftOpened = true;
-          setTimeout(() => { this.giftDialogue = true; }, 300);
-        } else if (this.giftDialogue) {
-          // Check if tapped registry button area (top-right of dialogue)
-          const boxY = this.H - 130 - 16;
-          const boxW = this.W - 32;
-          const btnW = 150;
-          const btnX = 16 + boxW - btnW - 12;
-          const btnY = boxY + 8;
-          if (tapX >= btnX && tapX <= btnX + btnW && tapY >= btnY && tapY <= btnY + 24) {
-            window.open('https://www.amazon.com/baby-reg/sabrina-fonstecilla-june-2026-miami/3BIOJ51KE3ACA', '_blank');
-            return;
-          }
-          // Next → RSVP
-          this.audio.click();
-          this.zone.run(() => { this.showRsvp = true; });
-          this.scene = 'rsvp';
-        }
-        break;
-
-      case 'confirm':
-        // Add to calendar tap
-        const infoLines = 8;
-        const calBtnY = this.H * 0.56 + infoLines * 18 + 20;
-        if (tapY >= calBtnY && tapY <= calBtnY + 32 && tapX >= this.W / 2 - 100 && tapX <= this.W / 2 + 100) {
-          this.addToCalendar();
-        }
-        break;
-    }
-  }
-
-  canSubmit(): boolean {
-    return !!(this.rsvpName.trim() && this.rsvpGuests > 0 && this.rsvpAttending !== null);
-  }
-
-  submitRsvp() {
-    if (!this.canSubmit()) return;
-
-    this.api.submitRsvp({
-      invitation_id: this.inviteId,
-      name: this.rsvpName.trim(),
-      num_guests: this.rsvpGuests,
-      attending: this.rsvpAttending!,
-    }).subscribe({
-      next: () => this.afterSubmit(),
-      error: () => this.afterSubmit(), // still show confirmation if API is down
-    });
-  }
-
-  private afterSubmit() {
-    this.showRsvp = false;
-    if (this.rsvpAttending) {
-      // Show email signup before confirm
-      this.showEmailSignup = true;
-    } else {
-      this.scene = 'decline';
-    }
-  }
-
-  submitEmail() {
-    if (!this.guestEmail.trim()) return;
-    // Update the RSVP with the email
-    this.api.updateRsvpEmail(this.inviteId, this.guestEmail.trim()).subscribe({
-      error: () => {} // silent fail
-    });
-    this.showEmailSignup = false;
-    this.audio.fanfare();
-    this.scene = 'confirm';
-  }
-
-  skipEmail() {
-    this.showEmailSignup = false;
-    this.audio.fanfare();
-    this.scene = 'confirm';
-  }
-
-  private addToCalendar() {
+  protected onTapTitle() {
     this.audio.click();
-    const start = '20260502T143000';
-    const end = '20260502T173000';
-    const title = encodeURIComponent("A Boy Story - Andy's Baby Shower");
-    const location = encodeURIComponent("Emy's Place, 9101 SW 45th St, Miami, FL 33165");
-    const details = encodeURIComponent('Baby Andy\'s shower! Registry: https://www.amazon.com/baby-reg/sabrina-fonstecilla-june-2026-miami/3BIOJ51KE3ACA');
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&location=${location}&details=${details}`;
-    window.open(url, '_blank');
+    this.goToIntro();
   }
 
-  private wrapText(text: string, maxW: number, font: string): string[] {
-    const ctx = this.ctx;
-    ctx.font = font;
-    const words = text.split(' ');
-    const lines: string[] = [];
-    let cur = '';
-    for (const word of words) {
-      const test = cur ? cur + ' ' + word : word;
-      if (ctx.measureText(test).width > maxW) {
-        if (cur) lines.push(cur);
-        cur = word;
-      } else {
-        cur = test;
-      }
+  protected onTapIntro() {
+    if (!this.introReady) {
+      this.skipTypewriter();
+    } else {
+      this.audio.click();
+      this.goToCalendar();
     }
-    if (cur) lines.push(cur);
-    return lines;
+  }
+
+  protected onTapCalendar() {
+    if (!this.calCircled) {
+      this.audio.reveal();
+      this.revealCalendar();
+    } else if (this.calDialogue) {
+      this.audio.click();
+      this.goToMap();
+    }
+  }
+
+  protected onTapMap() {
+    if (!this.mapRevealed) {
+      this.audio.reveal();
+      this.revealMap();
+    } else if (this.mapDialogue) {
+      this.audio.click();
+      this.goToGift();
+    }
+  }
+
+  protected onTapGift(tapX: number, tapY: number) {
+    if (!this.giftOpened) {
+      this.audio.reveal();
+      this.revealGift();
+    } else if (this.giftDialogue) {
+      // Check registry button hit area
+      const boxY = this.H - 130 - 16;
+      const boxW = this.W - 32;
+      const btnW = 150;
+      const btnX = 16 + boxW - btnW - 12;
+      const btnY = boxY + 8;
+      if (tapX >= btnX && tapX <= btnX + btnW && tapY >= btnY && tapY <= btnY + 24) {
+        this.openRegistry();
+        return;
+      }
+      this.audio.click();
+      this.goToRsvp();
+    }
+  }
+
+  protected onTapConfirm(tapX: number, tapY: number) {
+    const infoLines = 8;
+    const calBtnY = this.H * 0.56 + infoLines * 18 + 20;
+    if (tapY >= calBtnY && tapY <= calBtnY + 32 && tapX >= this.W / 2 - 100 && tapX <= this.W / 2 + 100) {
+      this.audio.click();
+      this.addToCalendar();
+    }
   }
 }
