@@ -99,6 +99,7 @@
       <div class="invite-url">
         <input type="text" readonly [value]="inviteUrl(inv)">
         <button (click)="copyUrl(inv)">COPY</button>
+        <span class="copied-toast" *ngIf="copiedId === inv.id">Copied!</span>
       </div>
     </div>
     <div class="empty" *ngIf="!invites.length && !loading">No invites yet. Create one above!</div>

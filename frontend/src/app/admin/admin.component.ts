@@ -23,6 +23,8 @@ export class AdminComponent implements OnInit {
 
   searchQuery = '';
 
+  copiedId: string | null = null;
+
   editingId: string | null = null;
   editName = '';
   editPlusOnes = 0;
@@ -121,6 +123,10 @@ export class AdminComponent implements OnInit {
 
   copyUrl(inv: Invitation) {
     navigator.clipboard.writeText(this.inviteUrl(inv));
+    this.copiedId = inv.id;
+    setTimeout(() => {
+      if (this.copiedId === inv.id) this.copiedId = null;
+    }, 2000);
   }
 
   get totalAttending(): number {

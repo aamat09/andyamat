@@ -258,6 +258,13 @@ h2 {
       color: #fff;
       cursor: pointer;
     }
+
+    .copied-toast {
+      font-size: 7px;
+      color: #7ec88b;
+      white-space: nowrap;
+      animation: fadeOut 2s ease forwards;
+    }
   }
 }
 
@@ -266,4 +273,9 @@ h2 {
   font-size: 8px;
   color: #999;
   padding: 30px;
+}
+
+@keyframes fadeOut {
+  0%, 60% { opacity: 1; }
+  100% { opacity: 0; }
 }
