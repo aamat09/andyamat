@@ -514,6 +514,44 @@ void FighterController::lookupFighter(
         name);
 }
 
+void FighterController::searchFighters(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback)
+{
+    auto q = req->getParameter("q");
+    if (q.empty()) {
+        callback(HttpResponse::newHttpJsonResponse(Json::Value(Json::arrayValue)));
+        return;
+    }
+    auto pattern = "%" + q + "%";
+    auto db = app().getDbClient();
+    db->execSqlAsync(
+        R"(SELECT id, name, char_type, weapon, level, elo, wins, losses
+           FROM fighters WHERE name ILIKE $1 ORDER BY elo DESC LIMIT 10)",
+        [callback](const Result &r) {
+            Json::Value arr(Json::arrayValue);
+            for (const auto &row : r) {
+                Json::Value obj;
+                obj["id"] = row["id"].as<std::string>();
+                obj["name"] = row["name"].as<std::string>();
+                obj["char_type"] = row["char_type"].as<std::string>();
+                obj["weapon"] = row["weapon"].as<std::string>();
+                obj["level"] = row["level"].as<int>();
+                obj["elo"] = row["elo"].as<int>();
+                obj["wins"] = row["wins"].as<int>();
+                obj["losses"] = row["losses"].as<int>();
+                arr.append(obj);
+            }
+            callback(HttpResponse::newHttpJsonResponse(arr));
+        },
+        [callback](const DrogonDbException &e) {
+            auto resp = HttpResponse::newHttpJsonResponse(errorJson(e.base().what()));
+            resp->setStatusCode(k500InternalServerError);
+            callback(resp);
+        },
+        pattern);
+}
+
 void FighterController::battle(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback,

@@ -13,6 +13,7 @@ public:
     ADD_METHOD_TO(FighterController::getMatch, "/api/matches/{id}", Get);
     ADD_METHOD_TO(FighterController::getFighterMatches, "/api/fighters/{id}/matches", Get);
     ADD_METHOD_TO(FighterController::leaderboard, "/api/leaderboard", Get);
+    ADD_METHOD_TO(FighterController::searchFighters, "/api/fighters/search", Get);
     ADD_METHOD_TO(FighterController::listFighters, "/api/admin/fighters", Get, "AdminFilter");
     METHOD_LIST_END
 
@@ -41,6 +42,9 @@ public:
 
     void leaderboard(const HttpRequestPtr &req,
                      std::function<void(const HttpResponsePtr &)> &&callback);
+
+    void searchFighters(const HttpRequestPtr &req,
+                        std::function<void(const HttpResponsePtr &)> &&callback);
 
     void listFighters(const HttpRequestPtr &req,
                       std::function<void(const HttpResponsePtr &)> &&callback);

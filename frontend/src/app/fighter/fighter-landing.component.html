@@ -40,10 +40,16 @@
 <div class="overlay" *ngIf="step === 'find'">
   <div class="form-panel">
     <h2>FIND FIGHTER</h2>
-    <input type="text" [(ngModel)]="findName" placeholder="Fighter name..." maxlength="20"
-           (keyup.enter)="submitFind()" autofocus />
+    <input type="text" [(ngModel)]="findName" placeholder="Type a name..." maxlength="20"
+           (input)="onSearchInput()" (keyup.enter)="submitFind()" autocomplete="off" autofocus />
+    <div class="search-results" *ngIf="searchResults.length">
+      <div class="search-item" *ngFor="let f of searchResults" (click)="selectFighter(f.name)">
+        <span class="sr-name">{{ f.name }}</span>
+        <span class="sr-info">LV.{{ f.level }} {{ f.char_type }} — ELO {{ f.elo }}</span>
+      </div>
+    </div>
     <div class="error" *ngIf="error">{{ error }}</div>
-    <button class="btn-gold" (click)="submitFind()" [disabled]="!findName.trim()">SEARCH</button>
+    <div class="no-results" *ngIf="findName.trim().length > 0 && searchResults.length === 0">No matches</div>
     <button class="btn-outline btn-sm" (click)="goBack()">BACK</button>
   </div>
 </div>

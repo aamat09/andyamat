@@ -84,6 +84,10 @@ export class ApiService {
     return this.http.get<Fighter>(`${this.base}/fighters/lookup/${encodeURIComponent(name)}`);
   }
 
+  searchFighters(q: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/fighters/search?q=${encodeURIComponent(q)}`);
+  }
+
   battle(fighterId: string, opponentId?: string): Observable<BattleResult> {
     const body = opponentId ? { opponent_id: opponentId } : {};
     return this.http.post<BattleResult>(`${this.base}/fighters/${fighterId}/battle`, body);

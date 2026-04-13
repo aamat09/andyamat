@@ -24,6 +24,7 @@ export class FighterLandingComponent implements AfterViewInit, OnDestroy {
   selectedWeapon: WeaponType | null = null;
   fighterName = '';
   findName = '';
+  searchResults: any[] = [];
   error = '';
   creating = false;
 
@@ -187,12 +188,30 @@ export class FighterLandingComponent implements AfterViewInit, OnDestroy {
       });
   }
 
+  onSearchInput() {
+    const q = this.findName.trim();
+    if (q.length < 1) { this.searchResults = []; return; }
+    this.api.searchFighters(q).subscribe({
+      next: (results) => this.searchResults = results,
+      error: () => this.searchResults = [],
+    });
+  }
+
+  selectFighter(name: string) {
+    this.audio.click();
+    this.router.navigate(['/fighter', name]);
+  }
+
   submitFind() {
     if (!this.findName.trim()) return;
     this.error = '';
+    if (this.searchResults.length === 1) {
+      this.selectFighter(this.searchResults[0].name);
+      return;
+    }
     this.api.lookupFighter(this.findName.trim()).subscribe({
       next: (f) => this.router.navigate(['/fighter', f.name]),
-      error: () => this.error = 'Fighter not found',
+      error: () => this.error = 'Fighter not found — try a partial name',
     });
   }
 }
