@@ -261,6 +261,61 @@ void InviteController::submitRsvp(
         invId, name, numGuests, attending, guestEmail);
 }
 
+void InviteController::updateInvite(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback,
+    const std::string &id)
+{
+    auto json = req->getJsonObject();
+    if (!json) {
+        auto resp = HttpResponse::newHttpJsonResponse(Json::Value{Json::objectValue});
+        resp->setStatusCode(k400BadRequest);
+        callback(resp);
+        return;
+    }
+
+    auto guestName = json->get("guest_name", "").asString();
+    auto poVal = json->get("plus_ones", 0);
+    int plusOnes = poVal.isString() ? std::stoi(poVal.asString()) : poVal.asInt();
+    auto theme = json->get("theme", "toystory").asString();
+
+    if (guestName.empty()) {
+        Json::Value err;
+        err["error"] = "guest_name is required";
+        auto resp = HttpResponse::newHttpJsonResponse(err);
+        resp->setStatusCode(k400BadRequest);
+        callback(resp);
+        return;
+    }
+
+    auto db = app().getDbClient();
+    db->execSqlAsync(
+        "UPDATE invitations SET guest_name = $1, plus_ones = $2, theme = $3 WHERE id = $4 RETURNING id, guest_name, plus_ones, theme, created_at",
+        [callback](const Result &r) {
+            if (r.empty()) {
+                auto resp = HttpResponse::newHttpJsonResponse(Json::Value{Json::objectValue});
+                resp->setStatusCode(k404NotFound);
+                callback(resp);
+                return;
+            }
+            Json::Value json;
+            json["id"] = r[0]["id"].as<std::string>();
+            json["guest_name"] = r[0]["guest_name"].as<std::string>();
+            json["plus_ones"] = r[0]["plus_ones"].as<int>();
+            json["theme"] = r[0]["theme"].as<std::string>();
+            json["created_at"] = r[0]["created_at"].as<std::string>();
+            callback(HttpResponse::newHttpJsonResponse(json));
+        },
+        [callback](const DrogonDbException &e) {
+            Json::Value json;
+            json["error"] = e.base().what();
+            auto resp = HttpResponse::newHttpJsonResponse(json);
+            resp->setStatusCode(k500InternalServerError);
+            callback(resp);
+        },
+        guestName, plusOnes, theme, id);
+}
+
 void InviteController::updateRsvpEmail(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback)

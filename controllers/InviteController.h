@@ -12,6 +12,7 @@ public:
     ADD_METHOD_TO(InviteController::recordView, "/api/invites/{id}/view", Post);
     ADD_METHOD_TO(InviteController::submitRsvp, "/api/rsvp", Post);
     ADD_METHOD_TO(InviteController::updateRsvpEmail, "/api/rsvp/email", Post);
+    ADD_METHOD_TO(InviteController::updateInvite, "/api/invites/{id}", Put, "AdminFilter");
     METHOD_LIST_END
 
     void getInvite(const HttpRequestPtr &req,
@@ -33,4 +34,8 @@ public:
 
     void updateRsvpEmail(const HttpRequestPtr &req,
                          std::function<void(const HttpResponsePtr &)> &&callback);
+
+    void updateInvite(const HttpRequestPtr &req,
+                      std::function<void(const HttpResponsePtr &)> &&callback,
+                      const std::string &id);
 };

@@ -21,6 +21,11 @@ export class AdminComponent implements OnInit {
   error = '';
   baseUrl = '';
 
+  editingId: string | null = null;
+  editName = '';
+  editPlusOnes = 0;
+  editTheme = 'toystory';
+
   constructor(
     private api: ApiService,
     private auth: AuthService,
@@ -67,6 +72,32 @@ export class AdminComponent implements OnInit {
       },
       error: () => {
         this.error = 'Failed to create invite';
+      },
+    });
+  }
+
+  startEdit(inv: Invitation) {
+    this.editingId = inv.id;
+    this.editName = inv.guest_name;
+    this.editPlusOnes = inv.plus_ones;
+    this.editTheme = inv.theme || 'toystory';
+  }
+
+  cancelEdit() {
+    this.editingId = null;
+  }
+
+  saveEdit(inv: Invitation) {
+    if (!this.editName.trim()) return;
+    this.api.updateInvite(inv.id, this.editName.trim(), Number(this.editPlusOnes), this.editTheme).subscribe({
+      next: (updated) => {
+        inv.guest_name = updated.guest_name;
+        inv.plus_ones = updated.plus_ones;
+        inv.theme = updated.theme;
+        this.editingId = null;
+      },
+      error: () => {
+        this.error = 'Failed to update invite';
       },
     });
   }

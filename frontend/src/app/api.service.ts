@@ -62,6 +62,14 @@ export class ApiService {
     });
   }
 
+  updateInvite(id: string, guestName: string, plusOnes: number, theme: string): Observable<Invitation> {
+    return this.http.put<Invitation>(`${this.base}/invites/${id}`, {
+      guest_name: guestName,
+      plus_ones: plusOnes,
+      theme,
+    });
+  }
+
   // ---- Pixel Arena ----
 
   createFighter(name: string, char_type: CharType, weapon: WeaponType): Observable<Fighter> {
