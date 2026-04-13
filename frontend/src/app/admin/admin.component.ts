@@ -21,6 +21,8 @@ export class AdminComponent implements OnInit {
   error = '';
   baseUrl = '';
 
+  searchQuery = '';
+
   editingId: string | null = null;
   editName = '';
   editPlusOnes = 0;
@@ -74,6 +76,16 @@ export class AdminComponent implements OnInit {
         this.error = 'Failed to create invite';
       },
     });
+  }
+
+  get filteredInvites(): Invitation[] {
+    if (!this.searchQuery.trim()) return this.invites;
+    const q = this.searchQuery.toLowerCase();
+    return this.invites.filter(inv =>
+      inv.guest_name.toLowerCase().includes(q) ||
+      inv.id.toLowerCase().includes(q) ||
+      this.inviteUrl(inv).toLowerCase().includes(q)
+    );
   }
 
   startEdit(inv: Invitation) {

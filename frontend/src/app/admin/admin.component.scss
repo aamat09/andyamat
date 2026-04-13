@@ -133,6 +133,29 @@ h2 {
   text-align: center;
 }
 
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+
+  input {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 10px 12px;
+    border: 2px solid #4a4a6a;
+    border-radius: 4px;
+    flex: 1;
+    background: #fff;
+  }
+
+  .search-count {
+    font-size: 7px;
+    color: #999;
+    white-space: nowrap;
+  }
+}
+
 .invite-card {
   background: #fff;
   border: 2px solid #ddd;

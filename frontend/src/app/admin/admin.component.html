@@ -48,7 +48,11 @@
 
   <div class="invite-list">
     <h2>Invitations</h2>
-    <div class="invite-card" *ngFor="let inv of invites">
+    <div class="search-box">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or link..." autocomplete="off">
+      <span class="search-count" *ngIf="searchQuery">{{filteredInvites.length}} / {{invites.length}}</span>
+    </div>
+    <div class="invite-card" *ngFor="let inv of filteredInvites">
       <!-- View mode -->
       <ng-container *ngIf="editingId !== inv.id">
         <div class="invite-header">
