@@ -1,0 +1,49 @@
+<canvas #arenaCanvas (click)="onTap($event)" (touchstart)="onTap($event)"></canvas>
+
+<!-- Menu buttons -->
+<div class="overlay" *ngIf="step === 'menu'">
+  <div class="menu-buttons">
+    <button class="btn-gold" (click)="goCreate()">CREATE FIGHTER</button>
+    <button class="btn-outline" (click)="goFind()">FIND FIGHTER</button>
+    <button class="btn-outline" (click)="goLeaderboard()">LEADERBOARD</button>
+  </div>
+</div>
+
+<!-- Weapon picker -->
+<div class="overlay overlay-bottom" *ngIf="step === 'pick_weapon'">
+  <div class="picker-panel">
+    <div class="weapon-option" *ngFor="let w of weapons"
+         [class.selected]="selectedWeapon === w"
+         (click)="pickWeapon(w)">
+      <div class="weapon-name">{{ WEAPON_INFO[w].label }}</div>
+      <div class="weapon-desc">{{ WEAPON_INFO[w].desc }}</div>
+    </div>
+    <button class="btn-outline btn-sm" (click)="step = 'pick_class'">BACK</button>
+  </div>
+</div>
+
+<!-- Name input -->
+<div class="overlay" *ngIf="step === 'pick_name'">
+  <div class="form-panel">
+    <h2>NAME YOUR FIGHTER</h2>
+    <input type="text" [(ngModel)]="fighterName" placeholder="Enter name..." maxlength="20"
+           (keyup.enter)="submitCreate()" autofocus />
+    <div class="error" *ngIf="error">{{ error }}</div>
+    <button class="btn-gold" (click)="submitCreate()" [disabled]="creating || !fighterName.trim()">
+      {{ creating ? 'CREATING...' : 'FIGHT!' }}
+    </button>
+    <button class="btn-outline btn-sm" (click)="step = 'pick_weapon'">BACK</button>
+  </div>
+</div>
+
+<!-- Find fighter -->
+<div class="overlay" *ngIf="step === 'find'">
+  <div class="form-panel">
+    <h2>FIND FIGHTER</h2>
+    <input type="text" [(ngModel)]="findName" placeholder="Fighter name..." maxlength="20"
+           (keyup.enter)="submitFind()" autofocus />
+    <div class="error" *ngIf="error">{{ error }}</div>
+    <button class="btn-gold" (click)="submitFind()" [disabled]="!findName.trim()">SEARCH</button>
+    <button class="btn-outline btn-sm" (click)="goBack()">BACK</button>
+  </div>
+</div>

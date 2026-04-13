@@ -1,0 +1,86 @@
+:host {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  min-height: 100dvh;
+  background: #0D0D2B;
+  overflow-y: auto;
+}
+
+.leaderboard-page {
+  max-width: 520px;
+  width: 100%;
+  padding: 24px 16px 40px;
+}
+
+h1 {
+  font-family: 'Press Start 2P';
+  font-size: 18px;
+  color: #FFD700;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.table-wrap {
+  border: 2px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.header-row {
+  display: flex;
+  padding: 10px 12px;
+  background: #1a1a3e;
+  border-bottom: 2px solid #333;
+  font-family: 'Press Start 2P';
+  font-size: 7px;
+  color: #888;
+}
+
+.entry-row {
+  display: flex;
+  padding: 10px 12px;
+  border-bottom: 1px solid #222;
+  cursor: pointer;
+  align-items: center;
+
+  &:hover { background: #1a1a3e; }
+  &:last-child { border-bottom: none; }
+}
+
+.col-rank { width: 30px; font-family: 'Press Start 2P'; font-size: 10px; color: #888;
+  &.top3 { color: #FFD700; }
+}
+.col-name {
+  flex: 1;
+  .fighter-name { font-family: 'Press Start 2P'; font-size: 9px; color: #FFF; }
+  .fighter-level { font-family: 'Press Start 2P'; font-size: 7px; color: #666; margin-left: 6px; }
+}
+.col-type { width: 80px; font-family: 'Press Start 2P'; font-size: 7px; }
+.col-elo { width: 50px; font-family: 'Press Start 2P'; font-size: 10px; color: #FFD700; text-align: right; }
+.col-wl { width: 50px; font-family: 'Press Start 2P'; font-size: 8px; color: #AAA; text-align: right; }
+
+.empty {
+  font-family: 'Press Start 2P';
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+  padding: 40px;
+}
+
+.nav-buttons {
+  text-align: center;
+  padding: 20px;
+}
+
+.btn-outline {
+  font-family: 'Press Start 2P';
+  font-size: 10px;
+  background: transparent;
+  color: #FFD700;
+  border: 2px solid #FFD700;
+  padding: 10px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover { background: rgba(255, 215, 0, 0.1); }
+}

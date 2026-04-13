@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import {
+  Fighter, BattleResult, MatchSummary, LeaderboardEntry, CharType, WeaponType,
+} from './fighter/models/fighter.models';
 
 export interface Invitation {
   id: string;
@@ -57,5 +60,36 @@ export class ApiService {
       plus_ones: plusOnes,
       theme,
     });
+  }
+
+  // ---- Pixel Arena ----
+
+  createFighter(name: string, char_type: CharType, weapon: WeaponType): Observable<Fighter> {
+    return this.http.post<Fighter>(`${this.base}/fighters`, { name, char_type, weapon });
+  }
+
+  getFighter(id: string): Observable<Fighter> {
+    return this.http.get<Fighter>(`${this.base}/fighters/${id}`);
+  }
+
+  lookupFighter(name: string): Observable<Fighter> {
+    return this.http.get<Fighter>(`${this.base}/fighters/lookup/${encodeURIComponent(name)}`);
+  }
+
+  battle(fighterId: string, opponentId?: string): Observable<BattleResult> {
+    const body = opponentId ? { opponent_id: opponentId } : {};
+    return this.http.post<BattleResult>(`${this.base}/fighters/${fighterId}/battle`, body);
+  }
+
+  getMatch(id: string): Observable<BattleResult> {
+    return this.http.get<BattleResult>(`${this.base}/matches/${id}`);
+  }
+
+  getFighterMatches(id: string): Observable<MatchSummary[]> {
+    return this.http.get<MatchSummary[]>(`${this.base}/fighters/${id}/matches`);
+  }
+
+  getLeaderboard(): Observable<LeaderboardEntry[]> {
+    return this.http.get<LeaderboardEntry[]>(`${this.base}/leaderboard`);
   }
 }

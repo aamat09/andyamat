@@ -1,0 +1,33 @@
+<div class="leaderboard-page">
+  <h1>LEADERBOARD</h1>
+
+  <div class="table-wrap">
+    <div class="header-row">
+      <span class="col-rank">#</span>
+      <span class="col-name">FIGHTER</span>
+      <span class="col-type">CLASS</span>
+      <span class="col-elo">ELO</span>
+      <span class="col-wl">W/L</span>
+    </div>
+
+    <div class="entry-row" *ngFor="let e of entries; let i = index"
+         (click)="goFighter(e.name)">
+      <span class="col-rank" [class.top3]="i < 3">{{ i + 1 }}</span>
+      <span class="col-name">
+        <span class="fighter-name">{{ e.name }}</span>
+        <span class="fighter-level">LV.{{ e.level }}</span>
+      </span>
+      <span class="col-type" [style.color]="typeColor(e.char_type)">
+        {{ e.char_type | uppercase }}
+      </span>
+      <span class="col-elo">{{ e.elo }}</span>
+      <span class="col-wl">{{ e.wins }}/{{ e.losses }}</span>
+    </div>
+
+    <div class="empty" *ngIf="!entries.length">No fighters yet. Be the first!</div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-outline" (click)="goHome()">HOME</button>
+  </div>
+</div>

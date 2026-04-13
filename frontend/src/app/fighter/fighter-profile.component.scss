@@ -1,0 +1,166 @@
+:host {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  min-height: 100dvh;
+  background: #0D0D2B;
+  overflow-y: auto;
+}
+
+.profile-page {
+  max-width: 480px;
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+canvas {
+  width: 100%;
+  display: block;
+}
+
+.stats-panel {
+  padding: 16px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+  min-width: 50px;
+
+  .stat-label {
+    display: block;
+    font-family: 'Press Start 2P';
+    font-size: 7px;
+    color: #888;
+    margin-bottom: 2px;
+  }
+  .stat-value {
+    font-family: 'Press Start 2P';
+    font-size: 12px;
+    color: #FFF;
+
+    &.gold { color: #FFD700; font-size: 16px; }
+  }
+}
+
+.actions {
+  margin: 16px 0;
+  text-align: center;
+}
+
+.btn-gold {
+  font-family: 'Press Start 2P';
+  font-size: 12px;
+  background: #FFD700;
+  color: #1a1a3e;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+
+  &:hover { background: #FFC107; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.btn-outline {
+  font-family: 'Press Start 2P';
+  font-size: 10px;
+  background: transparent;
+  color: #FFD700;
+  border: 2px solid #FFD700;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover { background: rgba(255, 215, 0, 0.1); }
+}
+
+.btn-sm { font-size: 8px; padding: 8px 14px; }
+
+.share-url {
+  text-align: center;
+  margin-top: 12px;
+
+  code {
+    font-family: 'Press Start 2P';
+    font-size: 9px;
+    color: #7B68EE;
+  }
+}
+
+.error {
+  font-family: 'Press Start 2P';
+  font-size: 8px;
+  color: #E74C3C;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.match-history {
+  padding: 0 16px;
+  margin-top: 16px;
+
+  h3 {
+    font-family: 'Press Start 2P';
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+}
+
+.match-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #1a1a3e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  margin: 4px 0;
+  cursor: pointer;
+
+  &:hover { border-color: #FFD700; }
+
+  .match-result {
+    font-family: 'Press Start 2P';
+    font-size: 9px;
+    min-width: 40px;
+
+    &.win { color: #2ECC71; }
+    &.loss { color: #E74C3C; }
+  }
+  .match-opponent {
+    font-family: 'Nunito';
+    font-size: 13px;
+    color: #CCC;
+    flex: 1;
+    margin: 0 8px;
+  }
+  .match-elo {
+    font-family: 'Press Start 2P';
+    font-size: 8px;
+    color: #FFD700;
+  }
+}
+
+.nav-buttons {
+  text-align: center;
+  padding: 20px;
+}
+
+.loading {
+  font-family: 'Press Start 2P';
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+  padding-top: 40vh;
+}

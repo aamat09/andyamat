@@ -1,0 +1,61 @@
+<div class="profile-page" *ngIf="fighter; else loading">
+  <canvas #profileCanvas></canvas>
+
+  <div class="stats-panel">
+    <div class="stat-row">
+      <div class="stat">
+        <span class="stat-label">ELO</span>
+        <span class="stat-value gold">{{ fighter.elo }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">W / L</span>
+        <span class="stat-value">{{ fighter.wins }} / {{ fighter.losses }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">XP</span>
+        <span class="stat-value">{{ fighter.xp }}</span>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><span class="stat-label">HP</span><span class="stat-value">{{ fighter.hp }}</span></div>
+      <div class="stat"><span class="stat-label">ATK</span><span class="stat-value">{{ fighter.atk }}</span></div>
+      <div class="stat"><span class="stat-label">DEF</span><span class="stat-value">{{ fighter.def }}</span></div>
+      <div class="stat"><span class="stat-label">SPD</span><span class="stat-value">{{ fighter.spd }}</span></div>
+      <div class="stat"><span class="stat-label">CRT</span><span class="stat-value">{{ fighter.crt }}</span></div>
+      <div class="stat"><span class="stat-label">LCK</span><span class="stat-value">{{ fighter.lck }}</span></div>
+    </div>
+
+    <div class="actions" *ngIf="isOwner">
+      <button class="btn-gold" (click)="startBattle()" [disabled]="battling">
+        {{ battling ? 'FIGHTING...' : 'RANDOM BATTLE' }}
+      </button>
+    </div>
+    <div class="error" *ngIf="error">{{ error }}</div>
+
+    <div class="share-url">
+      <span class="stat-label">SHARE</span>
+      <code>/fighter/{{ fighter.name }}</code>
+    </div>
+  </div>
+
+  <div class="match-history" *ngIf="matches.length">
+    <h3>RECENT BATTLES</h3>
+    <div class="match-row" *ngFor="let m of matches" [routerLink]="['/battle', m.match_id]">
+      <span class="match-result" [class.win]="getMatchResult(m) === 'WIN'"
+            [class.loss]="getMatchResult(m) === 'LOSS'">
+        {{ getMatchResult(m) }}
+      </span>
+      <span class="match-opponent">vs {{ getOpponentName(m) }}</span>
+      <span class="match-elo">{{ m.elo_change > 0 ? '+' : '' }}{{ m.elo_change }}</span>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-outline btn-sm" (click)="goHome()">HOME</button>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="loading" *ngIf="!error">LOADING...</div>
+  <div class="loading error" *ngIf="error">{{ error }}</div>
+</ng-template>
