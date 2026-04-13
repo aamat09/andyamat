@@ -14,7 +14,7 @@ import { BattleAudio } from './audio/battle-audio';
   styleUrl: './fighter-profile.component.scss',
 })
 export class FighterProfileComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('profileCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('profileCanvas') canvasRef?: ElementRef<HTMLCanvasElement>;
 
   fighter: Fighter | null = null;
   matches: MatchSummary[] = [];
@@ -38,22 +38,26 @@ export class FighterProfileComponent implements AfterViewInit, OnDestroy {
   ) {}
 
   ngAfterViewInit() {
-    const canvas = this.canvasRef.nativeElement;
-    canvas.width = this.W;
-    canvas.height = this.H;
-    this.ctx = canvas.getContext('2d')!;
-
     this.route.params.subscribe(p => {
       this.api.lookupFighter(p['name']).subscribe({
         next: (f) => {
           this.fighter = f;
           this.isOwner = localStorage.getItem('fighter_id') === f.id;
           this.api.getFighterMatches(f.id).subscribe(m => this.matches = m);
-          this.zone.runOutsideAngular(() => this.loop());
+          setTimeout(() => this.initCanvas());
         },
         error: () => this.error = 'Fighter not found',
       });
     });
+  }
+
+  private initCanvas() {
+    if (!this.canvasRef) return;
+    const canvas = this.canvasRef.nativeElement;
+    canvas.width = this.W;
+    canvas.height = this.H;
+    this.ctx = canvas.getContext('2d')!;
+    this.zone.runOutsideAngular(() => this.loop());
   }
 
   ngOnDestroy() { cancelAnimationFrame(this.animId); }
