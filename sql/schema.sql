@@ -13,7 +13,7 @@ CREATE TABLE invitations (
 
 CREATE TABLE rsvps (
     id              SERIAL PRIMARY KEY,
-    invitation_id   TEXT NOT NULL REFERENCES invitations(id),
+    invitation_id   TEXT NOT NULL UNIQUE REFERENCES invitations(id),
     name            TEXT NOT NULL,
     num_guests      INT NOT NULL DEFAULT 1,
     attending       BOOLEAN NOT NULL,

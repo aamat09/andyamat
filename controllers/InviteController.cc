@@ -239,7 +239,7 @@ void InviteController::submitRsvp(
 
     auto db = app().getDbClient();
     db->execSqlAsync(
-        "INSERT INTO rsvps (invitation_id, name, num_guests, attending, guest_email) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+        "INSERT INTO rsvps (invitation_id, name, num_guests, attending, guest_email) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (invitation_id) DO UPDATE SET name = EXCLUDED.name, num_guests = EXCLUDED.num_guests, attending = EXCLUDED.attending, guest_email = COALESCE(NULLIF(EXCLUDED.guest_email, ''), rsvps.guest_email), submitted_at = NOW() RETURNING id",
         [callback, name, attending, numGuests, invId, guestEmail](const Result &r) {
             Json::Value json;
             json["ok"] = true;
