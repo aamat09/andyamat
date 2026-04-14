@@ -12,17 +12,17 @@ import { LeaderboardComponent } from './fighter/leaderboard.component';
 export const routes: Routes = [
   // Pixel Arena (landing page)
   { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', component: FighterLandingComponent },
-  { path: 'fighter/:name', component: FighterProfileComponent },
-  { path: 'battle/:matchId', component: BattleArenaComponent },
-  { path: 'leaderboard', component: LeaderboardComponent },
+  { path: 'home', component: FighterLandingComponent, title: 'Pixel Arena — Create & Battle Pixel Fighters' },
+  { path: 'fighter/:name', component: FighterProfileComponent, title: 'Fighter Profile — Pixel Arena' },
+  { path: 'battle/:matchId', component: BattleArenaComponent, title: 'Battle — Pixel Arena' },
+  { path: 'leaderboard', component: LeaderboardComponent, title: 'Leaderboard — Pixel Arena' },
 
   // Baby shower (existing)
-  { path: 'retro/invite/:id', component: GameComponent },
-  { path: 'toystory/invite/:id', component: ToyGameComponent },
+  { path: 'retro/invite/:id', component: GameComponent, title: "A Boy Story — Andy's Baby Shower" },
+  { path: 'toystory/invite/:id', component: ToyGameComponent, title: "A Boy Story — Andy's Baby Shower" },
   { path: 'invite/:id', redirectTo: '/toystory/invite/:id', pathMatch: 'full' },
 
   // Admin (existing)
-  { path: 'login', component: LoginComponent },
-  { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
+  { path: 'login', component: LoginComponent, title: 'Admin Login — andyamat.com' },
+  { path: 'admin', component: AdminComponent, canActivate: [authGuard], title: 'Admin — andyamat.com' },
 ];
