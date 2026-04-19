@@ -20,11 +20,10 @@ export class AdminComponent implements OnInit {
   loading = false;
   error = '';
   baseUrl = '';
-
+  guestCounts: Record<string, number> = {};
+  savedId = '';
   searchQuery = '';
-
   copiedId: string | null = null;
-
   editingId: string | null = null;
   editName = '';
   editPlusOnes = 0;
@@ -56,6 +55,10 @@ export class AdminComponent implements OnInit {
     this.api.listInvites().subscribe({
       next: (data) => {
         this.invites = data;
+        this.guestCounts = {};
+        for (const inv of data) {
+          this.guestCounts[inv.id] = inv.num_guests || 1;
+        }
         this.loading = false;
       },
       error: (err) => {
@@ -129,10 +132,40 @@ export class AdminComponent implements OnInit {
     }, 2000);
   }
 
+  setRsvp(inv: Invitation, attending: boolean) {
+    this.api.adminUpdateRsvp(inv.id, { attending }).subscribe({
+      next: () => this.loadInvites(),
+      error: () => { this.error = 'Failed to update RSVP'; },
+    });
+  }
+
+  saveGuests(inv: Invitation) {
+    const num = this.guestCounts[inv.id];
+    if (num == null || num < 1) return;
+    this.api.adminUpdateRsvp(inv.id, { num_guests: num }).subscribe({
+      next: () => {
+        this.savedId = inv.id;
+        this.loadInvites();
+        setTimeout(() => { if (this.savedId === inv.id) this.savedId = ''; }, 2000);
+      },
+      error: () => { this.error = 'Failed to update guest count'; },
+    });
+  }
+
+  removeInvite(inv: Invitation) {
+    if (!confirm(`Remove invitation for ${inv.guest_name}?`)) return;
+    this.api.deleteInvite(inv.id).subscribe({
+      next: () => { this.invites = this.invites.filter(i => i.id !== inv.id); },
+      error: () => { this.error = 'Failed to remove invite'; },
+    });
+  }
+
+  resendInvite(inv: Invitation) {
+    this.copyUrl(inv);
+  }
+
   get totalAttending(): number {
-    return this.invites
-      .filter((i) => i.attending === true)
-      .reduce((sum, i) => sum + (i.num_guests || 1), 0);
+    return this.invites.filter((i) => i.attending === true).length;
   }
 
   get totalDeclined(): number {
@@ -141,5 +174,11 @@ export class AdminComponent implements OnInit {
 
   get totalPending(): number {
     return this.invites.filter((i) => i.attending == null).length;
+  }
+
+  get totalPersons(): number {
+    return this.invites
+      .filter((i) => i.attending === true)
+      .reduce((sum, i) => sum + (i.num_guests || 1), 0);
   }
 }

@@ -9,6 +9,8 @@ public:
     ADD_METHOD_TO(InviteController::getInvite, "/api/invites/{id}", Get);
     ADD_METHOD_TO(InviteController::createInvite, "/api/invites", Post, "AdminFilter");
     ADD_METHOD_TO(InviteController::listInvites, "/api/admin/invites", Get, "AdminFilter");
+    ADD_METHOD_TO(InviteController::adminUpdateRsvp, "/api/admin/invites/{id}/rsvp", Put, "AdminFilter");
+    ADD_METHOD_TO(InviteController::deleteInvite, "/api/admin/invites/{id}", Delete, "AdminFilter");
     ADD_METHOD_TO(InviteController::recordView, "/api/invites/{id}/view", Post);
     ADD_METHOD_TO(InviteController::submitRsvp, "/api/rsvp", Post);
     ADD_METHOD_TO(InviteController::updateRsvpEmail, "/api/rsvp/email", Post);
@@ -31,6 +33,14 @@ public:
 
     void submitRsvp(const HttpRequestPtr &req,
                     std::function<void(const HttpResponsePtr &)> &&callback);
+
+    void adminUpdateRsvp(const HttpRequestPtr &req,
+                         std::function<void(const HttpResponsePtr &)> &&callback,
+                         const std::string &id);
+
+    void deleteInvite(const HttpRequestPtr &req,
+                      std::function<void(const HttpResponsePtr &)> &&callback,
+                      const std::string &id);
 
     void updateRsvpEmail(const HttpRequestPtr &req,
                          std::function<void(const HttpResponsePtr &)> &&callback);

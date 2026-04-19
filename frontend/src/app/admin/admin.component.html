@@ -23,6 +23,10 @@
       <span class="stat-num">{{totalPending}}</span>
       <span class="stat-label">Pending</span>
     </div>
+    <div class="stat persons">
+      <span class="stat-num">{{totalPersons}}</span>
+      <span class="stat-label">Total Persons</span>
+    </div>
   </div>
 
   <div class="create-form">
@@ -96,6 +100,21 @@
         </div>
       </ng-container>
 
+      <div class="guest-count-row">
+        <label>Persons:</label>
+        <input type="number" min="1" max="20" [(ngModel)]="guestCounts[inv.id]">
+        <button class="save-btn" (click)="saveGuests(inv)">
+          {{savedId === inv.id ? 'SAVED!' : 'SAVE'}}
+        </button>
+      </div>
+      <div class="invite-actions">
+        <button class="action-btn accept" (click)="setRsvp(inv, true)" title="Mark as attending">ACCEPT</button>
+        <button class="action-btn decline" (click)="setRsvp(inv, false)" title="Mark as declined">DECLINE</button>
+        <button class="action-btn resend" (click)="resendInvite(inv)" title="Copy invite link">
+          {{copiedId === inv.id ? 'COPIED!' : 'RESEND'}}
+        </button>
+        <button class="action-btn remove" (click)="removeInvite(inv)" title="Delete invitation">REMOVE</button>
+      </div>
       <div class="invite-url">
         <input type="text" readonly [value]="inviteUrl(inv)">
         <button (click)="copyUrl(inv)">COPY</button>

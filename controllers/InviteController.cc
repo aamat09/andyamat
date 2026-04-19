@@ -9,7 +9,7 @@ void sendRsvpNotification(const std::string &guestName, bool attending,
                           const std::string &guestEmail) {
     std::string status = attending ? "ACCEPTED" : "DECLINED";
     std::string statusColor = attending ? "#7ec88b" : "#e74c3c";
-    std::string emoji = attending ? "YEE-HAW! 🤠" : "Aw shucks... 😢";
+    std::string emoji = attending ? "YEE-HAW! \xF0\x9F\xA4\xA0" : "Aw shucks... \xF0\x9F\x98\xA2";
     std::string subject = "RSVP " + status + " - " + guestName;
 
     std::string html = R"(
@@ -34,10 +34,8 @@ void sendRsvpNotification(const std::string &guestName, bool attending,
 </div>)";
 
     auto sendTo = [&](const std::string &to) {
-        // Write HTML to temp file to avoid shell escaping issues
         std::string tmpFile = "/tmp/andyamat_email_" + invitationId + "_" + to + ".json";
         std::string msgJson = R"({"Subject":{"Data":")" + subject + R"("},"Body":{"Html":{"Data":")" +
-            // Escape quotes in HTML for JSON
             [&]() {
                 std::string escaped;
                 for (char c : html) {
@@ -48,7 +46,6 @@ void sendRsvpNotification(const std::string &guestName, bool attending,
                 return escaped;
             }() + R"("}}})";
 
-        // Write JSON message to file
         FILE *f = fopen(tmpFile.c_str(), "w");
         if (f) {
             fputs(msgJson.c_str(), f);
@@ -248,7 +245,6 @@ void InviteController::submitRsvp(
             resp->setStatusCode(k201Created);
             callback(resp);
 
-            // Send email notification asynchronously
             std::thread(sendRsvpNotification, name, attending, numGuests, invId, guestEmail).detach();
         },
         [callback](const DrogonDbException &e) {
@@ -314,6 +310,146 @@ void InviteController::updateInvite(
             callback(resp);
         },
         guestName, plusOnes, theme, id);
+}
+
+void InviteController::adminUpdateRsvp(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback,
+    const std::string &id)
+{
+    auto json = req->getJsonObject();
+    if (!json) {
+        auto resp = HttpResponse::newHttpJsonResponse(Json::Value{Json::objectValue});
+        resp->setStatusCode(k400BadRequest);
+        callback(resp);
+        return;
+    }
+
+    bool hasAttending = json->isMember("attending");
+    bool hasNumGuests = json->isMember("num_guests");
+    if (!hasAttending && !hasNumGuests) {
+        auto resp = HttpResponse::newHttpJsonResponse(Json::Value{Json::objectValue});
+        resp->setStatusCode(k400BadRequest);
+        callback(resp);
+        return;
+    }
+
+    bool attending = hasAttending ? (*json)["attending"].asBool() : true;
+    int numGuests = hasNumGuests ? (*json)["num_guests"].asInt() : 1;
+    auto db = app().getDbClient();
+
+    db->execSqlAsync(
+        "SELECT id, attending, num_guests FROM rsvps WHERE invitation_id = $1",
+        [db, callback, id, attending, numGuests, hasAttending, hasNumGuests](const Result &r) {
+            if (r.empty()) {
+                db->execSqlAsync(
+                    R"(INSERT INTO rsvps (invitation_id, name, num_guests, attending)
+                       SELECT $1, i.guest_name, $2, $3 FROM invitations i WHERE i.id = $1
+                       RETURNING id)",
+                    [callback](const Result &r2) {
+                        if (r2.empty()) {
+                            Json::Value json;
+                            json["error"] = "Invitation not found";
+                            auto resp = HttpResponse::newHttpJsonResponse(json);
+                            resp->setStatusCode(k404NotFound);
+                            callback(resp);
+                            return;
+                        }
+                        Json::Value json;
+                        json["ok"] = true;
+                        callback(HttpResponse::newHttpJsonResponse(json));
+                    },
+                    [callback](const DrogonDbException &e) {
+                        Json::Value json;
+                        json["error"] = e.base().what();
+                        auto resp = HttpResponse::newHttpJsonResponse(json);
+                        resp->setStatusCode(k500InternalServerError);
+                        callback(resp);
+                    },
+                    id, numGuests, attending);
+            } else {
+                bool finalAttending = hasAttending ? attending : r[0]["attending"].as<bool>();
+                int finalGuests = hasNumGuests ? numGuests : r[0]["num_guests"].as<int>();
+                db->execSqlAsync(
+                    "UPDATE rsvps SET attending = $1, num_guests = $2 WHERE invitation_id = $3",
+                    [callback](const Result &) {
+                        Json::Value json;
+                        json["ok"] = true;
+                        callback(HttpResponse::newHttpJsonResponse(json));
+                    },
+                    [callback](const DrogonDbException &e) {
+                        Json::Value json;
+                        json["error"] = e.base().what();
+                        auto resp = HttpResponse::newHttpJsonResponse(json);
+                        resp->setStatusCode(k500InternalServerError);
+                        callback(resp);
+                    },
+                    finalAttending, finalGuests, id);
+            }
+        },
+        [callback](const DrogonDbException &e) {
+            Json::Value json;
+            json["error"] = e.base().what();
+            auto resp = HttpResponse::newHttpJsonResponse(json);
+            resp->setStatusCode(k500InternalServerError);
+            callback(resp);
+        },
+        id);
+}
+
+void InviteController::deleteInvite(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback,
+    const std::string &id)
+{
+    auto db = app().getDbClient();
+    db->execSqlAsync(
+        "DELETE FROM invite_views WHERE invitation_id = $1",
+        [db, callback, id](const Result &) {
+            db->execSqlAsync(
+                "DELETE FROM rsvps WHERE invitation_id = $1",
+                [db, callback, id](const Result &) {
+                    db->execSqlAsync(
+                        "DELETE FROM invitations WHERE id = $1 RETURNING id",
+                        [callback](const Result &r) {
+                            if (r.empty()) {
+                                Json::Value json;
+                                json["error"] = "Invitation not found";
+                                auto resp = HttpResponse::newHttpJsonResponse(json);
+                                resp->setStatusCode(k404NotFound);
+                                callback(resp);
+                                return;
+                            }
+                            Json::Value json;
+                            json["ok"] = true;
+                            callback(HttpResponse::newHttpJsonResponse(json));
+                        },
+                        [callback](const DrogonDbException &e) {
+                            Json::Value json;
+                            json["error"] = e.base().what();
+                            auto resp = HttpResponse::newHttpJsonResponse(json);
+                            resp->setStatusCode(k500InternalServerError);
+                            callback(resp);
+                        },
+                        id);
+                },
+                [callback](const DrogonDbException &e) {
+                    Json::Value json;
+                    json["error"] = e.base().what();
+                    auto resp = HttpResponse::newHttpJsonResponse(json);
+                    resp->setStatusCode(k500InternalServerError);
+                    callback(resp);
+                },
+                id);
+        },
+        [callback](const DrogonDbException &e) {
+            Json::Value json;
+            json["error"] = e.base().what();
+            auto resp = HttpResponse::newHttpJsonResponse(json);
+            resp->setStatusCode(k500InternalServerError);
+            callback(resp);
+        },
+        id);
 }
 
 void InviteController::updateRsvpEmail(

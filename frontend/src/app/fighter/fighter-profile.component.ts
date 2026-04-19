@@ -14,7 +14,15 @@ import { BattleAudio } from './audio/battle-audio';
   styleUrl: './fighter-profile.component.scss',
 })
 export class FighterProfileComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('profileCanvas') canvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('profileCanvas') set canvasRef(ref: ElementRef<HTMLCanvasElement>) {
+    if (ref && !this.ctx) {
+      const canvas = ref.nativeElement;
+      canvas.width = this.W;
+      canvas.height = this.H;
+      this.ctx = canvas.getContext('2d')!;
+      this.zone.runOutsideAngular(() => this.loop());
+    }
+  }
 
   fighter: Fighter | null = null;
   matches: MatchSummary[] = [];
@@ -23,7 +31,7 @@ export class FighterProfileComponent implements AfterViewInit, OnDestroy {
   error = '';
   CHAR_INFO = CHAR_INFO;
 
-  private ctx!: CanvasRenderingContext2D;
+  private ctx: CanvasRenderingContext2D | null = null;
   private W = 480;
   private H = 300;
   private frame = 0;
@@ -44,20 +52,10 @@ export class FighterProfileComponent implements AfterViewInit, OnDestroy {
           this.fighter = f;
           this.isOwner = localStorage.getItem('fighter_id') === f.id;
           this.api.getFighterMatches(f.id).subscribe(m => this.matches = m);
-          setTimeout(() => this.initCanvas());
         },
         error: () => this.error = 'Fighter not found',
       });
     });
-  }
-
-  private initCanvas() {
-    if (!this.canvasRef) return;
-    const canvas = this.canvasRef.nativeElement;
-    canvas.width = this.W;
-    canvas.height = this.H;
-    this.ctx = canvas.getContext('2d')!;
-    this.zone.runOutsideAngular(() => this.loop());
   }
 
   ngOnDestroy() { cancelAnimationFrame(this.animId); }
@@ -69,13 +67,13 @@ export class FighterProfileComponent implements AfterViewInit, OnDestroy {
   }
 
   private render() {
-    if (!this.fighter) return;
-    const { ctx, W, H } = this;
+    if (!this.fighter || !this.ctx) return;
+    const ctx = this.ctx;
+    const { W, H } = this;
 
     ctx.fillStyle = '#0D0D2B';
     ctx.fillRect(0, 0, W, H);
 
-    // Stars
     ctx.fillStyle = '#FFF';
     for (let i = 0; i < 20; i++) {
       const sx = ((i * 137 + 51) % W);
@@ -85,16 +83,13 @@ export class FighterProfileComponent implements AfterViewInit, OnDestroy {
     }
     ctx.globalAlpha = 1;
 
-    // Draw character large
     drawCharacter(ctx, this.fighter.char_type, W / 2, H / 2 + 20, 3.5, this.frame, 'idle', 'right');
 
-    // Name
     ctx.font = '16px "Press Start 2P"';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#FFD700';
     ctx.fillText(this.fighter.name.toUpperCase(), W / 2, 36);
 
-    // Level badge
     ctx.font = '10px "Press Start 2P"';
     ctx.fillStyle = CHAR_INFO[this.fighter.char_type].color;
     ctx.fillText(`LV.${this.fighter.level} ${CHAR_INFO[this.fighter.char_type].label.toUpperCase()}`, W / 2, 56);

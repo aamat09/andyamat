@@ -70,6 +70,14 @@ export class ApiService {
     });
   }
 
+  adminUpdateRsvp(id: string, data: { attending?: boolean; num_guests?: number }): Observable<any> {
+    return this.http.put(`${this.base}/admin/invites/${id}/rsvp`, data);
+  }
+
+  deleteInvite(id: string): Observable<any> {
+    return this.http.delete(`${this.base}/admin/invites/${id}`);
+  }
+
   // ---- Pixel Arena ----
 
   createFighter(name: string, char_type: CharType, weapon: WeaponType): Observable<Fighter> {
